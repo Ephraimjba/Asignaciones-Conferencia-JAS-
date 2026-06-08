@@ -192,15 +192,9 @@
 
 <!-- HEADER -->
 <div id="app-header">
-  <div class="hdr-logo">✨</div>
   <div>
-    <div class="hdr-title">Conferencia JAS #</div>
-    <div class="hdr-sub">Brillar con Su Luz · 3–7 Agosto 2026</div>
-  </div>
-  <div class="hdr-stats">
-    <span class="hdr-badge" id="hdr-personas">👥 45</span>
-    <span class="hdr-badge" id="hdr-asigs">📋 0 asig.</span>
-    <span class="hdr-save">💾 auto</span>
+    <div class="hdr-title">Conferencia JAS 2026</div>
+    <div class="hdr-sub">Brillar con Su Luz</div>
   </div>
 </div>
 
@@ -230,11 +224,15 @@
 </div>
 
 <!-- Side panel -->
-<button id="panel-toggle" onclick="togglePanel()">▶ Panel</button>
+<button id="panel-toggle" onclick="togglePanel()" style="display:none">▶ Panel</button>
+<div id="panel-fab" title="Mostrar panel operativo" onclick="togglePanel()" style="position:fixed;right:16px;bottom:20px;width:48px;height:48px;border-radius:50%;background:var(--brown);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:101;box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">📋</div>
 <div id="side-panel">
   <div class="panel-hdr">
     <div><div style="font-size:12px;font-weight:700">Panel Operativo</div><div id="panel-dia-lbl" style="font-size:10px;opacity:.7">Lunes</div></div>
-    <button class="panel-close" onclick="togglePanel()">✕</button>
+    <div style="display:flex;gap:6px">
+      <button class="panel-close" onclick="hidePanelFab()" title="Ocultar botón panel">👁</button>
+      <button class="panel-close" onclick="togglePanel()">✕</button>
+    </div>
   </div>
   <div class="panel-body" id="panel-body"></div>
 </div>
@@ -469,9 +467,7 @@ function loadData() {
 }
 
 function updateHeaderStats() {
-  document.getElementById("hdr-personas").textContent = `👥 ${personas.length}`;
-  const total = Object.values(asignaciones).reduce((s,a)=>s+a.length,0);
-  document.getElementById("hdr-asigs").textContent = `📋 ${total} asig.`;
+  // stats removed from header
 }
 
 // ─── EXPORT JSON ─────────────────────────────────────────────────────────────
@@ -524,9 +520,24 @@ document.querySelectorAll(".day-btn").forEach(btn => {
 function togglePanel() {
   panelOpen = !panelOpen;
   document.getElementById("side-panel").classList.toggle("open", panelOpen);
-  document.getElementById("panel-toggle").textContent = panelOpen ? "◀ Panel" : "▶ Panel";
-  renderPanel();
+  if(panelOpen) renderPanel();
 }
+function hidePanelFab() {
+  panelOpen = false;
+  document.getElementById("side-panel").classList.remove("open");
+  document.getElementById("panel-fab").style.display = "none";
+  document.getElementById("panel-fab-restore").style.display = "flex";
+}
+// Restore button (bottom-left) shown after hiding
+(function(){
+  const btn = document.createElement("button");
+  btn.id = "panel-fab-restore";
+  btn.title = "Mostrar botón de panel";
+  btn.innerHTML = "📋";
+  btn.style.cssText = "display:none;position:fixed;left:16px;bottom:20px;width:38px;height:38px;border-radius:50%;background:#64748b;border:none;color:#fff;font-size:16px;cursor:pointer;z-index:101;box-shadow:0 3px 10px rgba(0,0,0,.25);align-items:center;justify-content:center;";
+  btn.onclick = () => { document.getElementById("panel-fab").style.display="flex"; btn.style.display="none"; };
+  document.body.appendChild(btn);
+})();
 
 // ─── OVERLAY ─────────────────────────────────────────────────────────────────
 function openOverlay(html) {
@@ -1305,8 +1316,8 @@ function renderImprimir() {
       </div>`;
     }).join("");
     modeContent=`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:4px">Tarjetas individuales — ${esc(imprimirDia)}</h3><p style="font-size:11px;color:#64748b">Imprime todas o una a una.</p></div>
-      <button class="btn btn-gold" onclick="printTodas()">🖨️ Imprimir TODAS</button>
+      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:4px">Tarjetas individuales — ${esc(imprimirDia)}</h3><p style="font-size:11px;color:#64748b">Cada persona recibe su PDF en vertical, listo para fondo de pantalla o impresión.</p><p style="font-size:10px;color:#f59e0b;margin-top:4px">⚠ Permite ventanas emergentes en el navegador antes de pulsar.</p></div>
+      <button class="btn btn-gold" onclick="printTodas()">🖨️ PDF individual por persona (${personas.length})</button>
     </div>
     <div class="tarjeta-grid">${tarjetas}</div>`;
   }
@@ -1322,48 +1333,151 @@ function renderImprimir() {
   `;
 }
 
-function baseHTML(title, body) {
+function baseHTMLLandscape(title, body) {
   return `<!DOCTYPE html><html lang="es"><head><title>${title}</title>
   <meta charset="UTF-8">
-  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:20px;font-size:11px}h1{font-size:15px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:14px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #e2e8f0;padding:6px 8px;font-size:11px}th{background:#f8fafc;font-weight:700}.card{border-radius:8px;overflow:hidden;margin-bottom:12px;page-break-inside:avoid}.card-hdr{padding:10px 12px}.lema{font-size:9px;color:#94a3b8;text-align:center;margin-top:16px}@media print{.no-print{display:none}}</style>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;padding:20px;font-size:11px}
+    @page{size:A4 landscape;margin:15mm}
+    h1{font-size:15px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:14px}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #e2e8f0;padding:6px 8px;font-size:11px}
+    th{background:#f8fafc;font-weight:700}
+    .card{border-radius:8px;overflow:hidden;margin-bottom:12px;page-break-inside:avoid}
+    .card-hdr{padding:10px 12px}
+    @media print{.no-print{display:none}}
+  </style>
   </head><body>
   <button class="no-print" onclick="window.print()" style="margin-bottom:12px;padding:7px 18px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700">🖨️ Imprimir / Guardar como PDF</button>
   <h1>Conferencia JAS 2026 · Brillar con Su Luz</h1>
   ${body}
-  <p class="lema">✨ Brillar con Su Luz — ${new Date().toLocaleDateString("es-ES")}</p>
   </body></html>`;
 }
 
-function cardHTMLPersona(p, dia) {
-  const linea=getLineaPersona(p.id, dia);
-  const sm2=sM(p.sub);
-  const rows=linea.length?`<table><tr><th>Actividad</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${linea.map(r=>{const c=tC(r.tipo);return`<tr style="background:${c.bg}"><td>${esc(r.nombre)}</td><td>${r.resp?esc(r.resp.nombre):"—"}</td><td>${esc(r.lugar||"—")}</td><td>${esc(r.ini)}</td><td>${esc(r.fin)}</td></tr>`;}).join("")}</table>`:`<div style="padding:10px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`;
-  return `<div class="card" style="border:2px solid ${sm2.color}"><div class="card-hdr" style="background:${sm2.color};color:${sm2.text}"><strong style="font-size:13px">${esc(p.nombre)}</strong> · <span style="font-size:10px">${esc(p.sub)} · ${esc(p.rol)} · ${esc(dia)}</span></div>${rows}</div>`;
+function tarjetaPortraitHTML(p, dia) {
+  const linea = getLineaPersona(p.id, dia);
+  const sm2 = sM(p.sub);
+
+  // Build assignment rows as vertical blocks
+  let asigBlocks = "";
+  if (!linea.length) {
+    asigBlocks = `<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px">Sin asignaciones el ${esc(dia)}</div>`;
+  } else {
+    linea.forEach((r, i) => {
+      const c = tC(r.tipo);
+      asigBlocks += `
+      <div style="margin-bottom:10px;border-radius:8px;overflow:hidden;border:1.5px solid ${c.fg};page-break-inside:avoid">
+        <div style="background:${c.bg};color:${c.fg};padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:900;font-size:14px">${esc(r.nombre)}</span>
+          <span style="font-size:11px;opacity:.8">${esc(r.ini)} – ${esc(r.fin)}</span>
+        </div>
+        <div style="background:#fff;padding:10px 12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:2px">RESPONSABILIDAD</div>
+              <div style="font-size:13px;font-weight:700;color:#1e293b">${r.resp ? `<span style="background:${r.resp.color};color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;margin-right:5px">${esc(r.resp.abrev)}</span>${esc(r.resp.nombre)}` : "—"}</div>
+              ${r.subcat ? `<div style="font-size:10px;color:#64748b;margin-top:2px">${esc(r.subcat)}</div>` : ""}
+            </div>
+            <div>
+              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:2px">LUGAR</div>
+              <div style="font-size:13px;font-weight:700;color:#1e293b">📍 ${esc(r.lugar || "—")}</div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  return `<!DOCTYPE html><html lang="es"><head><title>${esc(p.nombre)} — ${esc(dia)}</title>
+  <meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    @page{size:A4 portrait;margin:12mm}
+    body{font-family:Arial,sans-serif;background:#f1f5f9;padding:0;font-size:12px;color:#1e293b}
+    @media print{.no-print{display:none}body{background:#f1f5f9}}
+  </style></head><body>
+
+  <button class="no-print" onclick="window.print()" style="margin:12px;padding:8px 20px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;display:block">🖨️ Imprimir / Guardar como PDF</button>
+
+  <div style="background:linear-gradient(135deg,${sm2.color} 0%,${sm2.color}cc 100%);padding:20px 20px 16px;margin-bottom:0">
+    <div style="font-size:10px;color:rgba(255,255,255,.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">CONFERENCIA JAS 2026</div>
+    <div style="font-size:24px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:4px">${esc(p.nombre)}</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
+      <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:4px;padding:3px 10px;font-size:10px;font-weight:700">${esc(SUB_META[p.sub]?.abrev||p.sub)}</span>
+      <span style="color:rgba(255,255,255,.85);font-size:11px">${esc(p.rol)}</span>
+    </div>
+  </div>
+
+  <div style="background:${sm2.color}22;padding:8px 20px;border-bottom:3px solid ${sm2.color};margin-bottom:16px">
+    <span style="font-size:18px;font-weight:900;color:${sm2.color};letter-spacing:1px">${esc(dia).toUpperCase()}</span>
+    <span style="font-size:11px;color:#64748b;margin-left:8px">${linea.length} asignación${linea.length!==1?"es":""}</span>
+  </div>
+
+  <div style="padding:0 16px 20px">
+    ${asigBlocks}
+  </div>
+
+  <div style="padding:10px 20px;border-top:1px solid #e2e8f0;text-align:center">
+    <span style="font-size:9px;color:#94a3b8;letter-spacing:.5px">✨ Brillar con Su Luz · Conferencia JAS 2026</span>
+  </div>
+  </body></html>`;
 }
 
 function imprimirTarjeta(pid, dia) {
-  const p=personas.find(x=>x.id===pid);
-  if(!p) return;
-  const w=window.open("","_blank");
-  w.document.write(baseHTML(`${p.nombre} — ${dia}`, cardHTMLPersona(p,dia)));
+  const p = personas.find(x => x.id === pid);
+  if (!p) return;
+  const w = window.open("", "_blank");
+  w.document.write(tarjetaPortraitHTML(p, dia));
   w.document.close();
 }
+
 function printHorario() {
-  const dia=imprimirDia;
-  const actos=(horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const body=`<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Horario completo — ${esc(dia)}</p>`+actos.map(act=>{
-    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
-    return`<div class="card" style="border:2px solid ${c.fg}"><div class="card-hdr" style="background:${c.bg};color:${c.fg}"><strong>${esc(act.nombre)}</strong> · ${esc(act.ini)}–${esc(act.fin)}</div>${asigs.length?`<table><tr><th>#</th><th>Nombre</th><th>Subcomité</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${asigs.map((a,i)=>{const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);return`<tr><td>${i+1}</td><td>${esc(p2?.nombre||"?")}</td><td>${esc(p2?.sub||"?")}</td><td>${esc(r2?.nombre||"?")}</td><td>${esc(a.lugar||"—")}</td><td>${esc(a.ini)}</td><td>${esc(a.fin)}</td></tr>`;}).join("")}</table>`:`<div style="padding:8px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`}</div>`;
+  const dia = imprimirDia;
+  const actos = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const body = `<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Horario completo — ${esc(dia)}</p>` + actos.map(act => {
+    const c = tC(act.tipo); const asigs = (asignaciones[`${dia}|${act.id}`]||[]);
+    return `<div class="card" style="border:2px solid ${c.fg}"><div class="card-hdr" style="background:${c.bg};color:${c.fg}"><strong>${esc(act.nombre)}</strong> · ${esc(act.ini)}–${esc(act.fin)}</div>${asigs.length
+      ? `<table><tr><th>#</th><th>Nombre</th><th>Subcomité</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${asigs.map((a,i)=>{const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);return`<tr><td>${i+1}</td><td>${esc(p2?.nombre||"?")}</td><td>${esc(p2?.sub||"?")}</td><td>${esc(r2?.nombre||"?")}</td><td>${esc(a.lugar||"—")}</td><td>${esc(a.ini)}</td><td>${esc(a.fin)}</td></tr>`;}).join("")}</table>`
+      : `<div style="padding:8px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`
+    }</div>`;
   }).join("");
-  const w=window.open("","_blank");
-  w.document.write(baseHTML(`Horario ${dia}`,body));
+  const w = window.open("", "_blank");
+  w.document.write(baseHTMLLandscape(`Horario ${dia}`, body));
   w.document.close();
 }
-function printTodas() {
-  const dia=imprimirDia;
-  const w=window.open("","_blank");
-  w.document.write(baseHTML(`Tarjetas ${dia}`,`<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Tarjetas — ${esc(dia)}</p>`+personas.map(p=>cardHTMLPersona(p,dia)).join("")));
-  w.document.close();
+
+async function printTodas() {
+  const dia = imprimirDia;
+  const total = personas.length;
+  // Show progress indicator
+  const prog = document.createElement("div");
+  prog.id = "print-progress";
+  prog.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:2px solid #D9A036;border-radius:12px;padding:28px 36px;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:260px";
+  prog.innerHTML = `<div style="font-size:15px;font-weight:700;color:#8C5626;margin-bottom:8px">Generando PDFs…</div><div id="prog-txt" style="font-size:12px;color:#64748b;margin-bottom:12px">0 / ${total}</div><div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden"><div id="prog-bar" style="background:#D9A036;height:6px;width:0%;transition:width .3s"></div></div><button onclick="document.getElementById('print-progress').remove()" style="margin-top:14px;background:#f1f5f9;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:11px;color:#64748b">Cancelar</button>`;
+  document.body.appendChild(prog);
+
+  for (let i = 0; i < personas.length; i++) {
+    if (!document.getElementById("print-progress")) break; // cancelled
+    const p = personas[i];
+    const ptxt = document.getElementById("prog-txt");
+    const pbar = document.getElementById("prog-bar");
+    if (ptxt) ptxt.textContent = `${i+1} / ${total} — ${p.nombre}`;
+    if (pbar) pbar.style.width = `${Math.round((i+1)/total*100)}%`;
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.write(tarjetaPortraitHTML(p, dia));
+      w.document.close();
+    }
+    // Small delay so browser doesn't block popups
+    await new Promise(r => setTimeout(r, 400));
+  }
+  const el = document.getElementById("print-progress");
+  if (el) {
+    el.querySelector("#prog-txt").textContent = `✅ ${total} ventanas abiertas. Imprime cada una con Ctrl+P.`;
+    el.querySelector("#prog-bar").style.width = "100%";
+    setTimeout(()=>el.remove(), 4000);
+  }
 }
 
 // ─── EN VIVO ─────────────────────────────────────────────────────────────────
