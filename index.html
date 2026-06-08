@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conferencia JAS 2026 · Brillar con Su Luz</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&display=swap');
+
+  :root {
+    --gold: #D9A036; --cream: #F2F1EB; --beige: #D9BC9A; --brown: #8C5626;
+    --c-coord: #0d9488; --c-mapy: #ec4899; --c-mmis: #64748b;
+    --c-borg: #b91c1c; --c-bcel: #ca8a04; --c-bpre: #1d4ed8;
+    --c-bsir: #7c3aed; --c-bcom: #c2410c;
+    --radius: 8px; --shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body { font-family: 'DM Sans', sans-serif; background: #f1f5f9; color: #1e293b; min-height: 100vh; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
+  input[type=time]::-webkit-calendar-picker-indicator { display: none; }
+
+  /* ── Header ── */
+  #app-header {
+    background: linear-gradient(135deg, #8C5626 0%, #4a1a00 60%, #1e293b 100%);
+    border-bottom: 3px solid var(--gold);
+    padding: 10px 20px;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .hdr-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg,#D9A036,#D9BC9A); display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3); }
+  .hdr-title { font-size: 18px; font-weight: 900; color: var(--gold); letter-spacing: 1px; font-family: 'DM Serif Display', serif; }
+  .hdr-sub { font-size: 9px; color: var(--beige); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+  .hdr-stats { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .hdr-badge { background: rgba(255,255,255,.1); border-radius: 6px; padding: 3px 9px; font-size: 10px; color: #f1f5f9; }
+  .hdr-save { background: rgba(0,0,0,.2); border-radius: 6px; padding: 3px 9px; font-size: 9px; color: rgba(255,255,255,.4); }
+
+  /* ── Tabs ── */
+  #tab-bar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 20px; display: flex; overflow-x: auto; box-shadow: var(--shadow); }
+  .tab-btn { background: transparent; border: none; border-bottom: 2px solid transparent; color: #64748b; padding: 11px 15px; font-weight: 500; font-size: 12px; white-space: nowrap; transition: all .2s; }
+  .tab-btn.active { border-bottom-color: var(--gold); color: var(--brown); font-weight: 700; }
+  .tab-btn:hover:not(.active) { color: var(--brown); }
+
+  #day-bar { background: #fff; border-bottom: 1px solid #f1f5f9; padding: 0 20px; display: flex; overflow-x: auto; }
+  .day-btn { background: transparent; border: none; border-bottom: 2px solid transparent; color: #94a3b8; padding: 6px 15px; font-weight: 400; font-size: 12px; white-space: nowrap; transition: all .2s; }
+  .day-btn.active { border-bottom-color: var(--beige); color: var(--brown); font-weight: 700; }
+
+  /* ── Main content ── */
+  #main { padding: 18px 20px; max-width: 1400px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Buttons ── */
+  .btn { border: none; border-radius: 6px; padding: 6px 13px; font-weight: 600; font-size: 11px; cursor: pointer; transition: opacity .15s; }
+  .btn:hover { opacity: .85; }
+  .btn:disabled { background: #e2e8f0 !important; color: #94a3b8 !important; cursor: default; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gray { background: #f1f5f9; color: #475569; }
+  .btn-red { background: #fee2e2; color: #b91c1c; }
+  .btn-sm { padding: 3px 9px; font-size: 10px; }
+
+  /* ── Form fields ── */
+  .fld { margin-bottom: 10px; }
+  .fld label { display: block; font-size: 10px; color: #64748b; margin-bottom: 3px; font-weight: 600; letter-spacing: .3px; }
+  .inp, .sel { width: 100%; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 9px; font-size: 12px; color: #1e293b; background: #f8fafc; font-family: inherit; }
+  .inp:focus, .sel:focus { outline: none; border-color: var(--gold); }
+
+  /* ── Overlay / Modal ── */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 3000; display: flex; align-items: center; justify-content: center; }
+  .modal { background: #fff; border-radius: 12px; padding: 22px; width: 500px; max-width: 96vw; border: 2px solid var(--gold); max-height: 88vh; overflow-y: auto; color: #111; }
+  .modal h3 { margin-bottom: 14px; color: var(--brown); font-size: 14px; }
+
+  /* ── Grid TIS ── */
+  .grid-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+  .grid-table { border-collapse: collapse; table-layout: fixed; }
+  .grid-table th, .grid-table td { border: 1px solid #f1f5f9; font-size: 10px; }
+  .grid-table thead th { background: #f1f5f9; border: 1px solid #e2e8f0; padding: 3px 2px; text-align: center; color: #94a3b8; }
+  .th-name { text-align: left !important; padding: 3px 6px !important; color: #64748b !important; font-size: 9px; }
+  .th-hour-full { font-weight: 700 !important; color: #334155 !important; background: #e0f2fe !important; font-size: 9px; }
+  .th-hour-half { font-weight: 400 !important; font-size: 8px; }
+  .act-cell { vertical-align: top; padding: 2px 4px; cursor: default; }
+  .act-abrev { font-size: 10px; font-weight: 900; line-height: 1; }
+  .act-time { font-size: 7px; opacity: .75; }
+  .act-edit-btn, .act-del-btn { background: rgba(0,0,0,.1); border: none; border-radius: 2px; padding: 0 3px; font-size: 8px; cursor: pointer; }
+  .act-del-btn { background: rgba(200,0,0,.2); color: #7f1d1d; }
+  .grp-row td { background: #f1f5f9 !important; padding: 3px 8px; font-size: 9px; font-weight: 700; color: #64748b; text-align: center; }
+  .person-row { cursor: default; }
+  .person-row:nth-child(even) { background: #fafafa; }
+  .p-num { text-align: center; font-size: 10px; font-weight: 700; color: #94a3b8; padding: 1px 2px !important; }
+  .p-name-cell { padding: 2px 5px !important; }
+  .p-name { font-size: 10px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .p-role { display: flex; align-items: center; gap: 3px; margin-top: 1px; }
+  .p-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .p-role-txt { font-size: 8px; color: #94a3b8; }
+  .asig-cell { cursor: pointer; padding: 1px 2px !important; text-align: center; vertical-align: middle; }
+  .asig-cell:hover { filter: brightness(.93); }
+  .asig-abrev { font-size: 9px; font-weight: 800; line-height: 1.2; user-select: none; }
+  .asig-sub { font-size: 7px; opacity: .7; }
+
+  /* ── Section collapsible ── */
+  .section { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+  .section-hdr { width: 100%; background: #fff; border: none; padding: 10px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px; text-align: left; transition: background .15s; }
+  .section-hdr:hover { background: #f8fafc; }
+  .section-hdr.open { background: #f8fafc; }
+  .section-arrow { font-size: 12px; transition: transform .2s; display: inline-block; }
+  .section-arrow.closed { transform: rotate(-90deg); }
+  .section-title { font-weight: 700; font-size: 13px; color: var(--brown); flex: 1; }
+  .section-count { background: var(--gold); color: #000; border-radius: 10px; padding: 2px 8px; font-size: 10px; font-weight: 700; }
+  .section-body { padding: 14px; border-top: 1px solid #e2e8f0; }
+
+  /* ── Panel operativo ── */
+  #panel-toggle { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: var(--brown); border: none; border-radius: 8px 0 0 8px; padding: 12px 6px; z-index: 100; writing-mode: vertical-rl; font-size: 11px; font-weight: 700; color: #fff; transition: opacity .2s; }
+  #panel-toggle:hover { opacity: .85; }
+  #side-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 230px; background: #fff; border-left: 2px solid #e2e8f0; z-index: 100; overflow-y: auto; box-shadow: -4px 0 20px rgba(0,0,0,.07); transform: translateX(100%); transition: transform .25s; }
+  #side-panel.open { transform: translateX(0); }
+  .panel-hdr { background: var(--brown); color: #fff; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
+  .panel-close { background: rgba(255,255,255,.15); border: none; color: #fff; border-radius: 5px; padding: 3px 8px; cursor: pointer; font-size: 12px; }
+  .panel-body { padding: 14px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .stat-card { background: #f8fafc; border-radius: 8px; padding: 10px 8px; border: 1px solid #e2e8f0; }
+  .stat-num { font-size: 20px; font-weight: 800; }
+  .stat-lbl { font-size: 9px; color: #64748b; margin-top: 1px; }
+
+  /* ── Summary block ── */
+  .summary-block { margin-top: 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); gap: 8px; margin-bottom: 12px; }
+  .summary-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .sub-tag { display: flex; align-items: center; gap: 5px; background: #f8fafc; border-radius: 6px; padding: 4px 8px; border: 1px solid #e2e8f0; font-size: 10px; }
+
+  /* ── Comite ── */
+  #comite-list { width: 260px; flex-shrink: 0; }
+  .comite-layout { display: flex; gap: 20px; }
+  .comite-scroll { max-height: 72vh; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+  .comite-grp-hdr { background: #f1f5f9; padding: 4px 10px; font-size: 9px; font-weight: 700; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+  .comite-person { display: flex; align-items: center; border-bottom: 1px solid #f8fafc; }
+  .comite-person.sel { background: #fef9ec; }
+  .comite-person-btn { flex: 1; background: transparent; border: none; color: #1e293b; padding: 7px 10px; cursor: pointer; text-align: left; font-size: 11px; }
+  .comite-person.sel .comite-person-btn { font-weight: 700; }
+  .comite-icon-btn { background: transparent; border: none; padding: 5px 6px; cursor: pointer; font-size: 11px; color: #94a3b8; }
+  .comite-icon-btn.del { color: #fca5a5; }
+  .linea-card { background: #fff; border-radius: 12px; overflow: hidden; flex: 1; }
+  .linea-hdr { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .linea-name { font-size: 15px; font-weight: 800; }
+  .linea-sub { font-size: 11px; opacity: .85; }
+  .day-pill { background: transparent; border: 1px solid rgba(255,255,255,.35); border-radius: 5px; padding: 3px 8px; font-size: 10px; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .day-pill.active { background: rgba(0,0,0,.25); }
+  .linea-table { width: 100%; border-collapse: collapse; }
+  .linea-table th { padding: 6px 10px; text-align: left; font-size: 10px; color: #64748b; border: 1px solid #f1f5f9; background: #f8fafc; }
+  .linea-table td { padding: 6px 10px; font-size: 11px; border: 1px solid #e2e8f0; }
+  .empty-state { padding: 40px; text-align: center; color: #94a3b8; }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+  .resp-badge { border-radius: 4px; padding: 2px 6px; font-size: 9px; font-weight: 700; margin-right: 4px; color: #fff; }
+
+  /* ── Imprimir ── */
+  .mode-toggle { display: flex; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; width: fit-content; margin-bottom: 20px; }
+  .mode-btn { background: #fff; border: none; padding: 8px 16px; font-weight: 700; font-size: 12px; color: #475569; transition: all .15s; }
+  .mode-btn.active { background: var(--brown); color: #fff; }
+  .tarjeta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 6px; }
+  .tarjeta-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
+
+  /* ── En Vivo ── */
+  .live-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; margin-bottom: 16px; }
+  .live-stat { border-radius: 8px; padding: 12px; }
+  .live-stat-num { font-size: 24px; font-weight: 900; }
+  .live-stat-lbl { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .act-card { background: #fff; border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .act-card-hdr { padding: 8px 12px; display: flex; justify-content: space-between; }
+  .act-card-body { padding: 8px 12px; }
+  .asig-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; padding: 4px 8px; background: #f8fafc; border-radius: 5px; }
+  .libres-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; max-height: 60vh; overflow-y: auto; }
+  .libre-grp-hdr { background: #f1f5f9; padding: 3px 10px; font-size: 9px; font-weight: 700; color: #64748b; }
+  .libre-person { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid #f8fafc; font-size: 11px; }
+
+  /* ── Legend ── */
+  .legend { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .legend-box { width: 11px; height: 11px; border-radius: 2px; }
+  .legend-txt { font-size: 9px; color: #94a3b8; }
+
+  /* ── Print styles ── */
+  @media print { #app-header, #tab-bar, #day-bar, #panel-toggle, #side-panel, .no-print { display: none !important; } }
+
+  /* ── Leyenda tipo ── */
+  .chip { border-radius: 3px; padding: 1px 5px; font-size: 9px; font-weight: 700; white-space: nowrap; }
+  .act-pre-row td { border: 1px solid #f1f5f9; }
+  .para-label { font-size: 8px; color: #94a3b8; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="app-header">
+  <div class="hdr-logo">✨</div>
+  <div>
+    <div class="hdr-title">Conferencia JAS #</div>
+    <div class="hdr-sub">Brillar con Su Luz · 3–7 Agosto 2026</div>
+  </div>
+  <div class="hdr-stats">
+    <span class="hdr-badge" id="hdr-personas">👥 45</span>
+    <span class="hdr-badge" id="hdr-asigs">📋 0 asig.</span>
+    <span class="hdr-save">💾 auto</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div id="tab-bar">
+  <button class="tab-btn active" data-tab="horario">📅 Horario</button>
+  <button class="tab-btn" data-tab="operativo">🎛️ Centro Operativo</button>
+  <button class="tab-btn" data-tab="comite">👥 Comité</button>
+  <button class="tab-btn" data-tab="imprimir">🖨️ Imprimir</button>
+  <button class="tab-btn" data-tab="vivo">🔴 En Vivo</button>
+</div>
+<div id="day-bar">
+  <button class="day-btn active" data-day="Lunes">Lunes</button>
+  <button class="day-btn" data-day="Martes">Martes</button>
+  <button class="day-btn" data-day="Miércoles">Miércoles</button>
+  <button class="day-btn" data-day="Jueves">Jueves</button>
+  <button class="day-btn" data-day="Viernes">Viernes</button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="tab-horario" class="tab-content active"></div>
+  <div id="tab-operativo" class="tab-content"></div>
+  <div id="tab-comite" class="tab-content"></div>
+  <div id="tab-imprimir" class="tab-content"></div>
+  <div id="tab-vivo" class="tab-content"></div>
+</div>
+
+<!-- Side panel -->
+<button id="panel-toggle" onclick="togglePanel()">▶ Panel</button>
+<div id="side-panel">
+  <div class="panel-hdr">
+    <div><div style="font-size:12px;font-weight:700">Panel Operativo</div><div id="panel-dia-lbl" style="font-size:10px;opacity:.7">Lunes</div></div>
+    <button class="panel-close" onclick="togglePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" style="display:none" onclick="closeOverlay(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const BRAND = {gold:"#D9A036",cream:"#F2F1EB",beige:"#D9BC9A",brown:"#8C5626"};
+const SUB_META = {
+  "Coordinadores":          {color:"#0d9488",text:"#fff",abrev:"COORD"},
+  "Matrimonio de Apoyo":    {color:"#ec4899",text:"#fff",abrev:"M.APY"},
+  "Matrimonios Misioneros": {color:"#64748b",text:"#fff",abrev:"M.MIS"},
+  "Brilla y Organiza":      {color:"#b91c1c",text:"#fff",abrev:"B.ORG"},
+  "Brilla y Celebra":       {color:"#ca8a04",text:"#000",abrev:"B.CEL"},
+  "Brilla en su Presencia": {color:"#1d4ed8",text:"#fff",abrev:"B.PRE"},
+  "Brilla Sirviendo":       {color:"#7c3aed",text:"#fff",abrev:"B.SIR"},
+  "Brilla y Comparte":      {color:"#c2410c",text:"#fff",abrev:"B.COM"},
+};
+const TC = {
+  logistica:{bg:"#fecaca",fg:"#7f1d1d"},general:{bg:"#f1f5f9",fg:"#334155"},
+  celebra:{bg:"#fef9c3",fg:"#713f12"},presencia:{bg:"#dbeafe",fg:"#1e3a8a"},
+  sirviendo:{bg:"#ede9fe",fg:"#4c1d95"},comparte:{bg:"#ffedd5",fg:"#7c2d12"},
+  descanso:{bg:"#f8fafc",fg:"#94a3b8"},guardia:{bg:"#1e293b",fg:"#e2e8f0"},
+};
+const DIAS = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
+const GRUPOS = [
+  {label:"COORDINADORES",sub:"Coordinadores",ids:["P01","P02"]},
+  {label:"MATRIMONIOS APOYO",sub:"Matrimonio de Apoyo",ids:["P03","P04","P05","P06"]},
+  {label:"BRILLA Y ORGANIZA",sub:"Brilla y Organiza",ids:["P07","P08","P09","P10"]},
+  {label:"BRILLA Y CELEBRA",sub:"Brilla y Celebra",ids:["P11","P12","P13","P14","P15"]},
+  {label:"BRILLA EN SU PRESENCIA",sub:"Brilla en su Presencia",ids:["P16","P17","P18","P19"]},
+  {label:"BRILLA SIRVIENDO",sub:"Brilla Sirviendo",ids:["P20","P21","P22"]},
+  {label:"BRILLA Y COMPARTE",sub:"Brilla y Comparte",ids:["P23","P24","P25","P26","P27"]},
+  {label:"MATRIMONIOS MISIONEROS",sub:"Matrimonios Misioneros",ids:["P28","P29","P30","P31","P32","P33","P34","P35","P36","P37","P38","P39","P40","P41","P42","P43","P44","P45"]},
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let personas = [
+  {id:"P01",nombre:"Natalia Ruiz",sub:"Coordinadores",rol:"Coordinadora"},
+  {id:"P02",nombre:"Dylan Amurrio",sub:"Coordinadores",rol:"Coordinador"},
+  {id:"P03",nombre:"Daniel Pan",sub:"Matrimonio de Apoyo",rol:"Asesor Conf."},
+  {id:"P04",nombre:"Paula Scorziello",sub:"Matrimonio de Apoyo",rol:"Asesora Conf."},
+  {id:"P05",nombre:"Jorge Millan",sub:"Matrimonio de Apoyo",rol:"Asesor Área"},
+  {id:"P06",nombre:"Karen Diaz",sub:"Matrimonio de Apoyo",rol:"Asesora Área"},
+  {id:"P07",nombre:"Miguel Rodriguez",sub:"Brilla y Organiza",rol:"Líder"},
+  {id:"P08",nombre:"Daniel Lozano",sub:"Brilla y Organiza",rol:"Miembro"},
+  {id:"P09",nombre:"Roberto Salazar",sub:"Brilla y Organiza",rol:"Miembro"},
+  {id:"P10",nombre:"Ephraim Borgoñoz",sub:"Brilla y Organiza",rol:"Miembro"},
+  {id:"P11",nombre:"Pierre Rivas",sub:"Brilla y Celebra",rol:"Líder"},
+  {id:"P12",nombre:"Albany Diaz",sub:"Brilla y Celebra",rol:"Miembro"},
+  {id:"P13",nombre:"Orhiana Alvarez",sub:"Brilla y Celebra",rol:"Miembro"},
+  {id:"P14",nombre:"Yan Marques",sub:"Brilla y Celebra",rol:"Miembro"},
+  {id:"P15",nombre:"Andrea Rubio",sub:"Brilla y Celebra",rol:"Miembro"},
+  {id:"P16",nombre:"Marta Lopez",sub:"Brilla en su Presencia",rol:"Líder"},
+  {id:"P17",nombre:"Arturo Carballo",sub:"Brilla en su Presencia",rol:"Miembro"},
+  {id:"P18",nombre:"Denisse Roka",sub:"Brilla en su Presencia",rol:"Miembro"},
+  {id:"P19",nombre:"Jhoselyn Balderrama",sub:"Brilla en su Presencia",rol:"Miembro"},
+  {id:"P20",nombre:"Ronald Parra",sub:"Brilla Sirviendo",rol:"Líder"},
+  {id:"P21",nombre:"Jasmine Alba",sub:"Brilla Sirviendo",rol:"Miembro"},
+  {id:"P22",nombre:"Julian Manzano",sub:"Brilla Sirviendo",rol:"Miembro"},
+  {id:"P23",nombre:"Sebastian Camacho",sub:"Brilla y Comparte",rol:"Líder"},
+  {id:"P24",nombre:"Arturo Padilla",sub:"Brilla y Comparte",rol:"Miembro"},
+  {id:"P25",nombre:"Ariadna Morales",sub:"Brilla y Comparte",rol:"Miembro"},
+  {id:"P26",nombre:"Joao Medina",sub:"Brilla y Comparte",rol:"Miembro"},
+  {id:"P27",nombre:"Annie Márquez",sub:"Brilla y Comparte",rol:"Miembro"},
+  {id:"P28",nombre:"Elder Bond",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P29",nombre:"Hermana Bond",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P30",nombre:"Elder Larrosa",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P31",nombre:"Hermana Larrosa",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P32",nombre:"Elder Mcarferty",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P33",nombre:"Hermana Mcaferty",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P34",nombre:"Elder Lisonbee",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P35",nombre:"Hermana Lisonbee",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P36",nombre:"Elder Johnson",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P37",nombre:"Hermana Johnson",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P38",nombre:"Elder Geertsen",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P39",nombre:"Hermana Geertsen",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P40",nombre:"Elder Jane",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P41",nombre:"Hermana Jane",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P42",nombre:"Elder Case",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P43",nombre:"Hermana Case",sub:"Matrimonios Misioneros",rol:"Misionera"},
+  {id:"P44",nombre:"Elder Rush",sub:"Matrimonios Misioneros",rol:"Misionero"},
+  {id:"P45",nombre:"Hermana Rush",sub:"Matrimonios Misioneros",rol:"Misionera"},
+];
+
+let horario = {
+  Lunes:[
+    {id:"L1",ini:"12:00",fin:"17:00",nombre:"Check-in",abrev:"CHK",tipo:"logistica"},
+    {id:"L2",ini:"17:00",fin:"18:30",nombre:"Descongélate",abrev:"DES",tipo:"celebra"},
+    {id:"L3",ini:"18:30",fin:"19:00",nombre:"E. Grupales",abrev:"E.G",tipo:"presencia"},
+    {id:"L4",ini:"19:00",fin:"20:00",nombre:"Bienvenida",abrev:"BIE",tipo:"general"},
+    {id:"L5",ini:"20:00",fin:"21:00",nombre:"Cena",abrev:"CEN",tipo:"general"},
+    {id:"L6",ini:"21:00",fin:"21:30",nombre:"Tiempo libre",abrev:"LIB",tipo:"descanso"},
+    {id:"L7",ini:"21:30",fin:"01:00",nombre:"Baile Ibicenco",abrev:"BAI",tipo:"celebra"},
+    {id:"L8",ini:"01:00",fin:"03:00",nombre:"Guardia",abrev:"GRD",tipo:"guardia"},
+  ],
+  Martes:[
+    {id:"M1",ini:"07:30",fin:"09:00",nombre:"Desayuno",abrev:"DSY",tipo:"general"},
+    {id:"M2",ini:"09:00",fin:"09:30",nombre:"E. Grupales",abrev:"E.G",tipo:"presencia"},
+    {id:"M3",ini:"09:30",fin:"12:30",nombre:"Resi + Act",abrev:"RSI",tipo:"sirviendo"},
+    {id:"M4",ini:"12:30",fin:"14:00",nombre:"Goldstein",abrev:"GLD",tipo:"comparte"},
+    {id:"M5",ini:"14:00",fin:"15:30",nombre:"Almuerzo",abrev:"ALM",tipo:"general"},
+    {id:"M6",ini:"15:30",fin:"18:30",nombre:"OlimpiaJAS",abrev:"OLM",tipo:"celebra"},
+    {id:"M7",ini:"18:30",fin:"19:30",nombre:"Tiempo libre",abrev:"LIB",tipo:"descanso"},
+    {id:"M8",ini:"19:30",fin:"21:00",nombre:"Cena",abrev:"CEN",tipo:"general"},
+    {id:"M9",ini:"21:00",fin:"01:00",nombre:"Baile Brasil",abrev:"BBR",tipo:"celebra"},
+    {id:"M10",ini:"01:00",fin:"03:00",nombre:"Guardia",abrev:"GRD",tipo:"guardia"},
+  ],
+  "Miércoles":[
+    {id:"X1",ini:"07:30",fin:"09:00",nombre:"Desayuno",abrev:"DSY",tipo:"general"},
+    {id:"X2",ini:"09:00",fin:"09:30",nombre:"E. Grupales",abrev:"E.G",tipo:"presencia"},
+    {id:"X3",ini:"09:30",fin:"11:00",nombre:"Cita tazas",abrev:"CIT",tipo:"celebra"},
+    {id:"X4",ini:"11:15",fin:"13:30",nombre:"Clases FSY",abrev:"FSY",tipo:"comparte"},
+    {id:"X5",ini:"13:30",fin:"15:00",nombre:"Almuerzo",abrev:"ALM",tipo:"general"},
+    {id:"X6",ini:"15:00",fin:"17:30",nombre:"Mójate",abrev:"MOJ",tipo:"celebra"},
+    {id:"X7",ini:"17:30",fin:"18:00",nombre:"Tiempo libre",abrev:"LIB",tipo:"descanso"},
+    {id:"X8",ini:"18:00",fin:"19:30",nombre:"Got Talent",abrev:"GOT",tipo:"celebra"},
+    {id:"X9",ini:"19:30",fin:"20:30",nombre:"Cena",abrev:"CEN",tipo:"general"},
+    {id:"X10",ini:"20:30",fin:"23:00",nombre:"ILUMINA SEG",abrev:"ILU",tipo:"presencia"},
+    {id:"X11",ini:"23:00",fin:"01:00",nombre:"Feria",abrev:"FER",tipo:"celebra"},
+    {id:"X12",ini:"01:00",fin:"03:00",nombre:"Guardia",abrev:"GRD",tipo:"guardia"},
+  ],
+  Jueves:[
+    {id:"J1",ini:"07:30",fin:"09:00",nombre:"Desayuno",abrev:"DSY",tipo:"general"},
+    {id:"J2",ini:"09:00",fin:"09:30",nombre:"E. Grupales",abrev:"E.G",tipo:"presencia"},
+    {id:"J3",ini:"09:30",fin:"14:00",nombre:"Kits",abrev:"KIT",tipo:"sirviendo"},
+    {id:"J3B",ini:"09:30",fin:"14:00",nombre:"Viaje Templo",abrev:"VTM",tipo:"logistica"},
+    {id:"J4",ini:"14:00",fin:"15:30",nombre:"Almuerzo",abrev:"ALM",tipo:"general"},
+    {id:"J5",ini:"15:30",fin:"18:00",nombre:"Concierto+Dev",abrev:"CON",tipo:"presencia"},
+    {id:"J6",ini:"18:00",fin:"18:30",nombre:"Tiempo libre",abrev:"LIB",tipo:"descanso"},
+    {id:"J7",ini:"18:30",fin:"20:00",nombre:"Gymkana Esp.",abrev:"GYM",tipo:"presencia"},
+    {id:"J8",ini:"20:00",fin:"21:30",nombre:"Cena",abrev:"CEN",tipo:"general"},
+    {id:"J9",ini:"21:30",fin:"02:00",nombre:"Baile Bridgerton",abrev:"BBG",tipo:"celebra"},
+    {id:"J10",ini:"01:00",fin:"03:00",nombre:"Guardia",abrev:"GRD",tipo:"guardia"},
+  ],
+  Viernes:[
+    {id:"V1",ini:"07:30",fin:"09:00",nombre:"Desayuno",abrev:"DSY",tipo:"general"},
+    {id:"V2",ini:"09:00",fin:"10:00",nombre:"Golden Awards",abrev:"GAW",tipo:"celebra"},
+    {id:"V3",ini:"10:00",fin:"11:00",nombre:"Testimonios",abrev:"TST",tipo:"presencia"},
+    {id:"V4",ini:"10:00",fin:"11:00",nombre:"Estudio Grupal",abrev:"EST",tipo:"comparte"},
+    {id:"V5",ini:"11:00",fin:"12:00",nombre:"Dev Despedida",abrev:"DVS",tipo:"presencia"},
+    {id:"V6",ini:"11:00",fin:"14:00",nombre:"Check-out",abrev:"OUT",tipo:"logistica"},
+  ],
+};
+
+let asignaciones = {};
+let lugares = ["Auditorio","Comedor","Salón Principal","Recepción","Exterior","Grupos","Aulas","Autocar","Piscina","Hall","Planta 1","Planta 2","—"];
+let responsabilidades = [
+  {id:"R01",nombre:"Coordinación general",abrev:"COORD",color:"#1d4ed8",subcategorias:["Principal","Apoyo"]},
+  {id:"R02",nombre:"Control de flujo",abrev:"FLUJO",color:"#0d9488",subcategorias:["Entrada","Salida","Pasillos"]},
+  {id:"R03",nombre:"Apoyo logístico",abrev:"LOGIS",color:"#b91c1c",subcategorias:[]},
+  {id:"R04",nombre:"Supervisión orden",abrev:"SUPER",color:"#7c3aed",subcategorias:[]},
+  {id:"R05",nombre:"Acomodador/a",abrev:"ACOM",color:"#ca8a04",subcategorias:["Auditorio","Comedor","Hall"]},
+  {id:"R06",nombre:"Guía participantes",abrev:"GUIA",color:"#0891b2",subcategorias:[]},
+  {id:"R07",nombre:"Decoración",abrev:"DECO",color:"#ec4899",subcategorias:["Pre-evento","Post-evento"]},
+  {id:"R08",nombre:"Material/Recursos",abrev:"MATER",color:"#c2410c",subcategorias:[]},
+  {id:"R09",nombre:"Guardia nocturna",abrev:"GRDX",color:"#0f172a",subcategorias:["Planta 1","Planta 2","Exterior"]},
+  {id:"R10",nombre:"Soporte dinámicas",abrev:"SOPOR",color:"#4f46e5",subcategorias:[]},
+  {id:"R11",nombre:"Comer tranquilo",abrev:"COMER",color:"#64748b",subcategorias:[]},
+  {id:"R12",nombre:"Recoger maletas",abrev:"MALET",color:"#b91c1c",subcategorias:[]},
+  {id:"R13",nombre:"Presentador/a",abrev:"PRES",color:"#ca8a04",subcategorias:[]},
+  {id:"R14",nombre:"Apoyo técnico",abrev:"TECN",color:"#0d9488",subcategorias:[]},
+  {id:"R15",nombre:"Libre",abrev:"LIBRE",color:"#94a3b8",subcategorias:[]},
+];
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const uid = () => Math.random().toString(36).slice(2,8);
+const toM = s => { if(!s) return 0; const[h,m]=s.split(":").map(Number); return (h<7?h+24:h)*60+(m||0); };
+const DAY_START=toM("07:00"), DAY_END=toM("03:00"), SLOT=30;
+const TOTAL_SLOTS=(DAY_END-DAY_START)/SLOT;
+const slotOf = m => Math.max(0,Math.min(Math.floor((m-DAY_START)/SLOT),TOTAL_SLOTS));
+const sM = s => SUB_META[s]||{color:"#888",text:"#fff",abrev:"?"};
+const tC = t => TC[t]||TC.general;
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function hourLabels() {
+  const o=[];
+  for(let s=0;s<TOTAL_SLOTS;s++){
+    const m=DAY_START+s*SLOT,hh=Math.floor(m/60)%24,mm=m%60;
+    o.push({slot:s,label:mm===0?`${String(hh).padStart(2,"0")}:00`:"·30",full:mm===0});
+  }
+  return o;
+}
+
+function computeTracks(bloques) {
+  const sorted=[...bloques].sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const tracks=[];
+  sorted.forEach(bk=>{
+    let placed=false;
+    for(let t=0;t<tracks.length;t++){
+      if(tracks[t].every(e=>toM(bk.fin)<=toM(e.ini)||toM(bk.ini)>=toM(e.fin))){tracks[t].push(bk);placed=true;break;}
+    }
+    if(!placed) tracks.push([bk]);
+  });
+  return tracks;
+}
+
+function bkMetaOf(bloques) {
+  return bloques.map(b=>({...b,s0:slotOf(toM(b.ini)),sN:Math.max(1,Math.round((toM(b.fin)-toM(b.ini))/SLOT))}));
+}
+
+function getBreakpoints(bkMeta) {
+  const bp=new Set([0,TOTAL_SLOTS]);
+  bkMeta.forEach(({s0,sN})=>{bp.add(s0);bp.add(Math.min(s0+sN,TOTAL_SLOTS));});
+  return [...bp].sort((a,b)=>a-b);
+}
+
+// ─── PERSIST ─────────────────────────────────────────────────────────────────
+function persist() {
+  try {
+    localStorage.setItem("cj7_p", JSON.stringify(personas));
+    localStorage.setItem("cj7_h", JSON.stringify(horario));
+    localStorage.setItem("cj7_a", JSON.stringify(asignaciones));
+    localStorage.setItem("cj7_l", JSON.stringify(lugares));
+    localStorage.setItem("cj7_r", JSON.stringify(responsabilidades));
+  } catch(e) {}
+  updateHeaderStats();
+}
+
+function loadData() {
+  try {
+    const p=localStorage.getItem("cj7_p"); if(p) personas=JSON.parse(p);
+    const h=localStorage.getItem("cj7_h"); if(h) horario=JSON.parse(h);
+    const a=localStorage.getItem("cj7_a"); if(a) asignaciones=JSON.parse(a);
+    const l=localStorage.getItem("cj7_l"); if(l) lugares=JSON.parse(l);
+    const r=localStorage.getItem("cj7_r"); if(r) responsabilidades=JSON.parse(r);
+  } catch(e) {}
+}
+
+function updateHeaderStats() {
+  document.getElementById("hdr-personas").textContent = `👥 ${personas.length}`;
+  const total = Object.values(asignaciones).reduce((s,a)=>s+a.length,0);
+  document.getElementById("hdr-asigs").textContent = `📋 ${total} asig.`;
+}
+
+// ─── EXPORT JSON ─────────────────────────────────────────────────────────────
+function exportarJSON() {
+  const data = {personas, horario, asignaciones, lugares, responsabilidades};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "conferencia-jas-2026-datos.json"; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── TAB ROUTING ─────────────────────────────────────────────────────────────
+let currentTab = "horario";
+let currentDia = "Lunes";
+let selPersonaId = null;
+let comiteDiaFiltro = "Lunes";
+let imprimirDia = "Lunes";
+let imprimirModo = "horario";
+let vivoDia = "Lunes";
+let vivoHora = nowStr();
+let panelOpen = false;
+
+function nowStr() {
+  const d=new Date(); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentTab = btn.dataset.tab;
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tab-content").forEach(c=>c.classList.remove("active"));
+    document.getElementById("tab-"+currentTab).classList.add("active");
+    document.getElementById("day-bar").style.display = currentTab==="horario" ? "flex" : "none";
+    render();
+  });
+});
+
+document.querySelectorAll(".day-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    currentDia = btn.dataset.day;
+    document.querySelectorAll(".day-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderHorario();
+    renderPanel();
+  });
+});
+
+function togglePanel() {
+  panelOpen = !panelOpen;
+  document.getElementById("side-panel").classList.toggle("open", panelOpen);
+  document.getElementById("panel-toggle").textContent = panelOpen ? "◀ Panel" : "▶ Panel";
+  renderPanel();
+}
+
+// ─── OVERLAY ─────────────────────────────────────────────────────────────────
+function openOverlay(html) {
+  document.getElementById("modal-content").innerHTML = html;
+  document.getElementById("overlay").style.display = "flex";
+}
+function closeOverlay(e) {
+  if(!e || e.target === document.getElementById("overlay")) {
+    document.getElementById("overlay").style.display = "none";
+  }
+}
+window._closeOverlay = () => { document.getElementById("overlay").style.display = "none"; };
+
+// ─── RENDER DISPATCHER ───────────────────────────────────────────────────────
+function render() {
+  switch(currentTab) {
+    case "horario": renderHorario(); break;
+    case "operativo": renderOperativo(); break;
+    case "comite": renderComite(); break;
+    case "imprimir": renderImprimir(); break;
+    case "vivo": renderVivo(); break;
+  }
+}
+
+// ─── HORARIO / GRID TIS ──────────────────────────────────────────────────────
+function renderHorario() {
+  const dia = currentDia;
+  const bloques = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const bkM = bkMetaOf(bloques);
+  const tracks = computeTracks(bloques);
+  const bps = getBreakpoints(bkM);
+  const slots = hourLabels();
+
+  const CELL_W=44, COL_N=32, COL_NAME=150;
+
+  let html = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div>
+      <h2 style="margin:0;color:${BRAND.brown};font-size:15px;font-weight:700">${esc(dia)} — Conferencia JAS 2026</h2>
+      <div style="font-size:10px;color:#94a3b8;margin-top:1px">${bloques.length} actividades · ${personas.length} personas${tracks.length>1?` · ${tracks.length} actividades paralelas`:""} · clic para asignar</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="abrirModalNuevaAct()">+ Nueva actividad</button>
+      <button class="btn btn-gray" onclick="exportarJSON()">⬇ Exportar datos</button>
+    </div>
+  </div>
+  <div class="grid-wrap">
+  <table class="grid-table" style="min-width:${COL_N+COL_NAME+TOTAL_SLOTS*CELL_W}px">
+  <colgroup><col style="width:${COL_N}px"><col style="width:${COL_NAME}px">`;
+  slots.forEach(()=>{ html+=`<col style="width:${CELL_W}px">`; });
+  html += `</colgroup><thead>
+  <tr style="background:#f8fafc">
+    <th style="border:1px solid #e2e8f0;font-size:9px;color:#94a3b8;background:#f1f5f9">#</th>
+    <th class="th-name">Nombre</th>`;
+  slots.forEach(s=>{
+    html += `<th style="border:1px solid #e2e8f0;padding:2px 0;font-size:${s.full?9:8}px;font-weight:${s.full?700:400};color:${s.full?"#334155":"#94a3b8"};text-align:center;background:${s.full?"#e0f2fe":"#f8fafc"}">${esc(s.label)}</th>`;
+  });
+  html += `</tr>`;
+
+  // Track rows (activity headers)
+  tracks.forEach((track, ti) => {
+    const tbkM = bkM.filter(bk => track.some(t=>t.id===bk.id));
+    let s=0; let cells="";
+    while(s<TOTAL_SLOTS) {
+      const bk=tbkM.find(b=>b.s0===s);
+      if(bk) {
+        const span=Math.min(bk.sN,TOTAL_SLOTS-s);
+        const c=tC(bk.tipo);
+        cells += `<td colspan="${span}" class="act-cell" style="background:${c.bg}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <span class="act-abrev" style="color:${c.fg}">${esc(bk.abrev)}</span>
+            <div>
+              <button class="act-edit-btn" onclick="abrirModalEditarAct('${esc(bk.id)}')" style="color:${c.fg}">✏</button>
+              <button class="act-del-btn" onclick="eliminarAct('${esc(bk.id)}')">✕</button>
+            </div>
+          </div>
+          <div class="act-time" style="color:${c.fg}">${esc(bk.ini)}–${esc(bk.fin)}</div>
+        </td>`;
+        s+=span;
+      } else {
+        cells+=`<td style="border:1px solid #f1f5f9;background:${ti>0?"#f0fdf4":"#fafafa"}"></td>`;
+        s++;
+      }
+    }
+    html += `<tr class="act-pre-row">
+      <td style="border:1px solid #e2e8f0;background:#f1f5f9;text-align:center;font-size:8px;color:#94a3b8">${ti===0?"↕":""}</td>
+      <td style="border:1px solid #e2e8f0;padding:2px 6px;font-size:9px;color:#374151;background:#f1f5f9">${ti===0?"Actividad ↓":`<span class="para-label">↳ paralela</span>`}</td>
+      ${cells}
+    </tr>`;
+  });
+  html += `</thead><tbody>`;
+
+  // Person rows
+  const rows = buildRows();
+  rows.forEach((row, ri) => {
+    if(row.type==="grp") {
+      html += `<tr class="grp-row"><td colspan="${2+TOTAL_SLOTS}">${esc(row.label)}</td></tr>`;
+      return;
+    }
+    const {p,n} = row;
+    const sm2 = sM(p.sub);
+    let pcells = "";
+    for(let i=0;i<bps.length-1;i++) {
+      const s=bps[i], e=bps[i+1], span=e-s;
+      const active = bkM.filter(bk=>bk.s0<=s&&bk.s0+bk.sN>s);
+      if(!active.length) {
+        pcells += `<td colspan="${span}" style="border:1px solid #f8fafc"></td>`;
+      } else if(active.length===1) {
+        const bk=active[0];
+        const asig=(asignaciones[`${dia}|${bk.id}`]||[]).find(a=>a.pid===p.id);
+        const c=tC(bk.tipo);
+        const resp=responsabilidades.find(r=>r.id===asig?.respId);
+        const bg=asig?c.bg:"transparent";
+        const title=asig?`${resp?.nombre||""}${asig.subcat?" · "+asig.subcat:""} · ${asig.lugar}`:"Clic para asignar";
+        pcells += `<td colspan="${span}" class="asig-cell" style="background:${bg}" title="${esc(title)}" onclick="abrirModalAsig('${esc(p.id)}','${esc(bk.id)}')">
+          ${asig?`<div class="asig-abrev" style="color:${c.fg}">${esc(resp?.abrev||"·")}${asig.subcat?`<div class="asig-sub">${esc(asig.subcat)}</div>`:""}</div>`:""}
+        </td>`;
+      } else {
+        let inner = active.map(bk=>{
+          const asig=(asignaciones[`${dia}|${bk.id}`]||[]).find(a=>a.pid===p.id);
+          const c=tC(bk.tipo);
+          const resp=responsabilidades.find(r=>r.id===asig?.respId);
+          return `<div onclick="abrirModalAsig('${esc(p.id)}','${esc(bk.id)}')" style="flex:1;background:${asig?c.bg:"rgba(0,0,0,.02)"};border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:center;min-height:14px;cursor:pointer;padding:1px">
+            ${asig?`<span style="font-size:8px;font-weight:800;color:${c.fg}">${esc(resp?.abrev||"·")}</span>`:`<span style="font-size:7px;color:#ddd">+</span>`}
+          </div>`;
+        }).join("");
+        pcells += `<td colspan="${span}" style="border:1px solid #f1f5f9;padding:0;vertical-align:top"><div style="display:flex;flex-direction:column">${inner}</div></td>`;
+      }
+    }
+    html += `<tr class="person-row">
+      <td class="p-num">${n}</td>
+      <td class="p-name-cell">
+        <div class="p-name">${esc(p.nombre)}</div>
+        <div class="p-role"><div class="p-dot" style="background:${sm2.color}"></div><span class="p-role-txt">${esc(p.rol)}</span></div>
+      </td>
+      ${pcells}
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+
+  // Legend
+  html += `<div class="legend">`;
+  Object.entries(TC).forEach(([k,v])=>{
+    html += `<div class="legend-item"><div class="legend-box" style="background:${v.bg};border:1.5px solid ${v.fg}"></div><span class="legend-txt">${k}</span></div>`;
+  });
+  html += `</div>`;
+
+  // Summary
+  const asigSet = new Set();
+  bloques.forEach(a=>(asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
+  const sinCubrir = bloques.filter(a=>!(asignaciones[`${dia}|${a.id}`]||[]).length);
+  html += `<div class="summary-block">
+    <div style="font-size:12px;font-weight:700;color:${BRAND.brown};margin-bottom:12px">📊 Resumen operativo — ${esc(dia)}</div>
+    <div class="summary-grid">
+      ${[
+        {l:"Total comité",v:personas.length,c:BRAND.brown},
+        {l:"Asignados hoy",v:asigSet.size,c:"#16a34a"},
+        {l:"Sin asignar",v:personas.length-asigSet.size,c:personas.length-asigSet.size>0?"#dc2626":"#16a34a"},
+        {l:"Actividades",v:bloques.length,c:"#1d4ed8"},
+        {l:"Sin cubrir",v:sinCubrir.length,c:"#f59e0b"},
+      ].map(s=>`<div style="background:#f8fafc;border-radius:8px;padding:10px 12px;border:1px solid #e2e8f0">
+        <div style="font-size:22px;font-weight:800;color:${s.c}">${s.v}</div>
+        <div style="font-size:10px;color:#64748b;margin-top:1px">${s.l}</div>
+      </div>`).join("")}
+    </div>
+    <div class="summary-tags">
+      ${Object.entries(SUB_META).map(([sub,meta])=>{
+        const pers=personas.filter(p=>p.sub===sub);
+        if(!pers.length) return "";
+        const asig=pers.filter(p=>asigSet.has(p.id)).length;
+        return `<div class="sub-tag">
+          <div style="width:7px;height:7px;border-radius:50%;background:${meta.color}"></div>
+          <span>${meta.abrev}</span>
+          <span style="font-weight:700;color:${asig===pers.length?"#16a34a":"#f59e0b"}">${asig}/${pers.length}</span>
+        </div>`;
+      }).join("")}
+    </div>
+  </div>`;
+
+  document.getElementById("tab-horario").innerHTML = html;
+  renderPanel();
+}
+
+function buildRows() {
+  const rows=[];
+  const knownIds=GRUPOS.flatMap(g=>g.ids);
+  GRUPOS.forEach(g=>{
+    const extras=personas.filter(p=>!knownIds.includes(p.id)&&p.sub===g.sub);
+    const ms=[...g.ids.map(id=>personas.find(p=>p.id===id)).filter(Boolean),...extras];
+    if(!ms.length) return;
+    rows.push({type:"grp",label:`— ${g.label} —`});
+    ms.forEach(p=>rows.push({type:"p",p,n:rows.filter(r=>r.type==="p").length+1}));
+  });
+  const otherExtras=personas.filter(p=>!knownIds.includes(p.id)&&!GRUPOS.some(g=>g.sub===p.sub));
+  if(otherExtras.length){rows.push({type:"grp",label:"— OTROS —"});otherExtras.forEach(p=>rows.push({type:"p",p,n:rows.filter(r=>r.type==="p").length+1}));}
+  // Renumber
+  let n=0; rows.forEach(r=>{ if(r.type==="p") r.n=++n; });
+  return rows;
+}
+
+// ─── PANEL OPERATIVO ─────────────────────────────────────────────────────────
+function renderPanel() {
+  const dia = currentDia;
+  document.getElementById("panel-dia-lbl").textContent = dia;
+  const acts = horario[dia]||[];
+  const asigSet = new Set();
+  acts.forEach(a=>(asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
+  const sinCubrir = acts.filter(a=>!(asignaciones[`${dia}|${a.id}`]||[]).length);
+
+  let html = `<div class="stat-grid">
+    ${[
+      {l:"Asignados",v:asigSet.size,c:"#16a34a"},
+      {l:"Sin asignar",v:personas.length-asigSet.size,c:personas.length-asigSet.size>0?"#dc2626":"#16a34a"},
+      {l:"Actividades",v:acts.length,c:"#1d4ed8"},
+      {l:"Sin cubrir",v:sinCubrir.length,c:sinCubrir.length>0?"#f59e0b":"#16a34a"},
+    ].map(s=>`<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join("")}
+  </div>
+  <div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.5px">SUBCOMITÉS</div>`;
+
+  Object.entries(SUB_META).forEach(([sub,meta])=>{
+    const pers=personas.filter(p=>p.sub===sub);
+    if(!pers.length) return;
+    const asig=pers.filter(p=>asigSet.has(p.id)).length;
+    html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${meta.color};flex-shrink:0"></div>
+      <div style="flex:1;font-size:10px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.abrev}</div>
+      <div style="font-size:10px;font-weight:700;color:${asig===pers.length?"#16a34a":"#dc2626"}">${asig}/${pers.length}</div>
+    </div>`;
+  });
+
+  if(sinCubrir.length) {
+    html+=`<div style="font-size:10px;font-weight:700;color:#64748b;margin:10px 0 5px;letter-spacing:.5px">SIN CUBRIR</div>`;
+    sinCubrir.forEach(a=>{html+=`<div style="font-size:10px;color:#dc2626;margin-bottom:3px">⚠ ${esc(a.nombre)} · ${esc(a.ini)}</div>`;});
+  }
+  document.getElementById("panel-body").innerHTML = html;
+}
+
+// ─── MODAL ACTIVIDAD ─────────────────────────────────────────────────────────
+function abrirModalNuevaAct() {
+  abrirModalEditarAct(null);
+}
+function abrirModalEditarAct(actId) {
+  const dia = currentDia;
+  const act = actId ? (horario[dia]||[]).find(a=>a.id===actId) : null;
+  const f = act ? {...act} : {id:`${dia[0]}${uid()}`,ini:"08:00",fin:"09:00",nombre:"",abrev:"",tipo:"general"};
+  openOverlay(`
+    <h3>✏️ ${act?"Editar":"Nueva"} actividad</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Nombre</label><input class="inp" id="f-nombre" value="${esc(f.nombre||"")}"></div>
+      <div class="fld"><label>Código (grid)</label><input class="inp" id="f-abrev" value="${esc(f.abrev||"")}" style="font-weight:700" maxlength="6"></div>
+      <div class="fld"><label>Inicio</label><input class="inp" type="time" id="f-ini" value="${esc(f.ini||"")}"></div>
+      <div class="fld"><label>Fin</label><input class="inp" type="time" id="f-fin" value="${esc(f.fin||"")}"></div>
+    </div>
+    <div class="fld"><label>Tipo / Color</label><select class="sel" id="f-tipo">
+      ${Object.keys(TC).map(k=>`<option value="${k}"${f.tipo===k?" selected":""}>${k}</option>`).join("")}
+    </select></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-gold" onclick="_guardarAct('${esc(f.id)}')">Guardar</button>
+    </div>
+  `);
+}
+window._guardarAct = (id) => {
+  const nombre=document.getElementById("f-nombre").value.trim();
+  const abrev=document.getElementById("f-abrev").value.trim().toUpperCase().slice(0,6);
+  const ini=document.getElementById("f-ini").value;
+  const fin=document.getElementById("f-fin").value;
+  const tipo=document.getElementById("f-tipo").value;
+  if(!nombre||!ini||!fin) return;
+  const dia=currentDia;
+  const ex=(horario[dia]||[]).find(a=>a.id===id);
+  if(ex) {
+    horario[dia]=horario[dia].map(a=>a.id===id?{...a,nombre,abrev,ini,fin,tipo}:a);
+  } else {
+    horario[dia]=[...(horario[dia]||[]),{id,nombre,abrev,ini,fin,tipo}];
+  }
+  persist(); _closeOverlay(); renderHorario();
+};
+
+function eliminarAct(id) {
+  const dia=currentDia;
+  if(!confirm(`¿Eliminar "${(horario[dia]||[]).find(a=>a.id===id)?.nombre}"?`)) return;
+  horario[dia]=(horario[dia]||[]).filter(a=>a.id!==id);
+  const a2={...asignaciones}; delete a2[`${dia}|${id}`];
+  asignaciones=a2;
+  persist(); renderHorario();
+}
+
+// ─── MODAL ASIGNACIÓN ────────────────────────────────────────────────────────
+function abrirModalAsig(pid, actId) {
+  const dia=currentDia;
+  const act=(horario[dia]||[]).find(a=>a.id===actId);
+  const persona=personas.find(p=>p.id===pid);
+  const ex=(asignaciones[`${dia}|${actId}`]||[]).find(a=>a.pid===pid);
+  const sm2=sM(persona?.sub);
+  const respOpts=responsabilidades.map(r=>`<option value="${r.id}"${ex?.respId===r.id?" selected":""}>${esc(r.nombre)}</option>`).join("");
+  const lugarOpts=lugares.map(l=>`<option value="${esc(l)}"${(ex?.lugar||lugares[0])===l?" selected":""}>${esc(l)}</option>`).join("");
+
+  const resp=ex?responsabilidades.find(r=>r.id===ex.respId):null;
+  const subOpts=resp?.subcategorias?.length?resp.subcategorias.map(s=>`<option value="${esc(s)}"${ex?.subcat===s?" selected":""}>${esc(s)}</option>`).join(""):"";
+
+  openOverlay(`
+    <div style="background:${sm2.color};border-radius:8px;padding:10px 14px;margin-bottom:14px">
+      <div style="color:${sm2.text};font-weight:700;font-size:14px">${esc(persona?.nombre)}</div>
+      <div style="color:${sm2.text};opacity:.8;font-size:11px">${esc(act?.nombre)} · ${esc(dia)}</div>
+    </div>
+    <div class="fld"><label>Responsabilidad</label>
+      <select class="sel" id="ma-resp" onchange="_updateSubcats('${esc(pid)}','${esc(actId)}')">
+        <option value="">— Seleccionar —</option>${respOpts}
+      </select>
+    </div>
+    <div id="ma-subcat-wrap" style="${ex?.respId&&resp?.subcategorias?.length?"":"display:none"}">
+      <div class="fld"><label>Subcategoría (opcional)</label>
+        <select class="sel" id="ma-subcat"><option value="">— Sin subcategoría —</option>${subOpts}</select>
+      </div>
+    </div>
+    <div class="fld"><label>Lugar</label><select class="sel" id="ma-lugar">${lugarOpts}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Entrada (personal)</label><input class="inp" type="time" id="ma-ini" value="${ex?.ini||act?.ini||""}"></div>
+      <div class="fld"><label>Salida (personal)</label><input class="inp" type="time" id="ma-fin" value="${ex?.fin||act?.fin||""}"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      ${ex?`<button class="btn btn-red" onclick="_quitarAsig('${esc(dia)}','${esc(actId)}','${esc(pid)}')">Quitar</button>`:""}
+      <button class="btn btn-gold" onclick="_guardarAsig('${esc(dia)}','${esc(actId)}','${esc(pid)}')">${ex?"Actualizar":"Asignar"}</button>
+    </div>
+  `);
+}
+
+window._updateSubcats = (pid, actId) => {
+  const respId=document.getElementById("ma-resp").value;
+  const resp=responsabilidades.find(r=>r.id===respId);
+  const wrap=document.getElementById("ma-subcat-wrap");
+  const sel=document.getElementById("ma-subcat");
+  if(resp?.subcategorias?.length) {
+    wrap.style.display="";
+    sel.innerHTML=`<option value="">— Sin subcategoría —</option>`+resp.subcategorias.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  } else { wrap.style.display="none"; }
+};
+
+window._guardarAsig = (dia, actId, pid) => {
+  const respId=document.getElementById("ma-resp").value;
+  if(!respId) return;
+  const subcat=document.getElementById("ma-subcat")?.value||"";
+  const lugar=document.getElementById("ma-lugar").value;
+  const ini=document.getElementById("ma-ini").value;
+  const fin=document.getElementById("ma-fin").value;
+  const k=`${dia}|${actId}`;
+  asignaciones[k]=[...(asignaciones[k]||[]).filter(x=>x.pid!==pid),{pid,respId,subcat,lugar,ini,fin}];
+  persist(); _closeOverlay(); render();
+};
+
+window._quitarAsig = (dia, actId, pid) => {
+  const k=`${dia}|${actId}`;
+  asignaciones[k]=(asignaciones[k]||[]).filter(x=>x.pid!==pid);
+  persist(); _closeOverlay(); render();
+};
+
+// ─── MODAL NUEVA ASIG (desde operativo/vivo) ─────────────────────────────────
+function abrirModalNuevaAsig(initDia, initPid) {
+  const diaOpts=DIAS.map(d=>`<option value="${d}"${d===(initDia||"Lunes")?" selected":""}>${d}</option>`).join("");
+  const personaOpts=personas.map(p=>`<option value="${p.id}"${p.id===initPid?" selected":""}>${esc(p.nombre)} · ${SUB_META[p.sub]?.abrev}</option>`).join("");
+  const lugarOpts=lugares.map(l=>`<option value="${esc(l)}">${esc(l)}</option>`).join("");
+  const respOpts=responsabilidades.map(r=>`<option value="${r.id}">${esc(r.nombre)}</option>`).join("");
+
+  openOverlay(`
+    <h3>+ Nueva asignación</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Día</label><select class="sel" id="na-dia" onchange="_naUpdateActs()">${diaOpts}</select></div>
+      <div class="fld"><label>Actividad</label><select class="sel" id="na-act" onchange="_naUpdateHora()"><option value="">— Seleccionar —</option>${((horario[initDia||"Lunes"]||[]).map(a=>`<option value="${a.id}">${esc(a.nombre)}</option>`)).join("")}</select></div>
+    </div>
+    <div class="fld"><label>Persona</label><select class="sel" id="na-pid"><option value="">— Seleccionar —</option>${personaOpts}</select></div>
+    <div class="fld"><label>Responsabilidad</label><select class="sel" id="na-resp" onchange="_naUpdateSubcats()"><option value="">— Seleccionar —</option>${respOpts}</select></div>
+    <div id="na-subcat-wrap" style="display:none"><div class="fld"><label>Subcategoría</label><select class="sel" id="na-subcat"><option value="">— Sin subcategoría —</option></select></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="fld"><label>Lugar</label><select class="sel" id="na-lugar">${lugarOpts}</select></div>
+      <div class="fld"><label>Entrada</label><input class="inp" type="time" id="na-ini"></div>
+      <div class="fld"><label>Salida</label><input class="inp" type="time" id="na-fin"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-gold" onclick="_guardarNuevaAsig()">Asignar</button>
+    </div>
+  `);
+}
+window._naUpdateActs = () => {
+  const dia=document.getElementById("na-dia").value;
+  const sel=document.getElementById("na-act");
+  sel.innerHTML=`<option value="">— Seleccionar —</option>`+(horario[dia]||[]).map(a=>`<option value="${a.id}">${esc(a.nombre)}</option>`).join("");
+  document.getElementById("na-ini").value="";
+  document.getElementById("na-fin").value="";
+};
+window._naUpdateHora = () => {
+  const dia=document.getElementById("na-dia").value;
+  const actId=document.getElementById("na-act").value;
+  const act=(horario[dia]||[]).find(a=>a.id===actId);
+  if(act){document.getElementById("na-ini").value=act.ini;document.getElementById("na-fin").value=act.fin;}
+};
+window._naUpdateSubcats = () => {
+  const respId=document.getElementById("na-resp").value;
+  const resp=responsabilidades.find(r=>r.id===respId);
+  const wrap=document.getElementById("na-subcat-wrap");
+  const sel=document.getElementById("na-subcat");
+  if(resp?.subcategorias?.length){wrap.style.display="";sel.innerHTML=`<option value="">— Sin subcategoría —</option>`+resp.subcategorias.map(s=>`<option>${esc(s)}</option>`).join("");}
+  else wrap.style.display="none";
+};
+window._guardarNuevaAsig = () => {
+  const dia=document.getElementById("na-dia").value;
+  const actId=document.getElementById("na-act").value;
+  const pid=document.getElementById("na-pid").value;
+  const respId=document.getElementById("na-resp").value;
+  if(!dia||!actId||!pid||!respId) return;
+  const subcat=document.getElementById("na-subcat")?.value||"";
+  const lugar=document.getElementById("na-lugar").value;
+  const ini=document.getElementById("na-ini").value;
+  const fin=document.getElementById("na-fin").value;
+  const k=`${dia}|${actId}`;
+  asignaciones[k]=[...(asignaciones[k]||[]).filter(x=>x.pid!==pid),{pid,respId,subcat,lugar,ini,fin}];
+  persist(); _closeOverlay(); render();
+};
+
+// ─── OPERATIVO ───────────────────────────────────────────────────────────────
+let opFiltDia = "Todos";
+let opFiltPer = "";
+let opRespForm = null;
+let opSubcInput = "";
+let opNuevoLugar = "";
+
+function renderOperativo() {
+  const todas = [];
+  DIAS.forEach(dia=>(horario[dia]||[]).forEach(act=>{
+    (asignaciones[`${dia}|${act.id}`]||[]).forEach(asig=>{
+      const p=personas.find(x=>x.id===asig.pid),r=responsabilidades.find(x=>x.id===asig.respId);
+      todas.push({dia,act,asig,p,r});
+    });
+  }));
+  const filtradas=todas.filter(x=>{
+    if(opFiltDia!=="Todos"&&x.dia!==opFiltDia) return false;
+    if(opFiltPer&&!x.p?.nombre.toLowerCase().includes(opFiltPer.toLowerCase())) return false;
+    return true;
+  });
+
+  // Asignaciones table
+  let asigRows="";
+  if(!filtradas.length) {
+    asigRows=`<tr><td colspan="8" style="padding:20px;text-align:center;color:#94a3b8;font-size:11px">Sin asignaciones</td></tr>`;
+  } else {
+    filtradas.forEach(({dia,act,asig,p,r},i)=>{
+      const c=tC(act.tipo);
+      asigRows+=`<tr style="background:${i%2===0?"#fafafa":"#fff"}">
+        <td style="padding:5px 8px;font-size:10px;font-weight:700">${dia}</td>
+        <td style="padding:5px 8px"><span style="background:${c.bg};color:${c.fg};border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700">${esc(act.abrev)}</span></td>
+        <td style="padding:5px 8px"><div style="display:flex;align-items:center;gap:4px">
+          <span class="chip" style="background:${sM(p?.sub).color};color:${sM(p?.sub).text}">${sM(p?.sub).abrev}</span>
+          <span style="font-size:10px;font-weight:600">${esc(p?.nombre)}</span>
+        </div></td>
+        <td style="padding:5px 8px">${r?`<span style="background:${r.color};color:#fff;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;margin-right:4px">${esc(r.abrev)}</span>`+`<span style="font-size:10px">${esc(r.nombre)}</span>`:"—"}</td>
+        <td style="padding:5px 8px;font-size:10px;color:#64748b">${esc(asig.lugar||"—")}</td>
+        <td style="padding:5px 8px;font-size:10px;font-weight:700;color:#1e3a8a">${esc(asig.ini)}</td>
+        <td style="padding:5px 8px;font-size:10px;font-weight:700;color:#1e3a8a">${esc(asig.fin)}</td>
+        <td style="padding:5px 8px">
+          <div style="display:flex;gap:3px">
+            <button class="btn btn-gray btn-sm" onclick="abrirModalAsigEdit('${esc(dia)}','${esc(act.id)}','${esc(asig.pid)}')">✏️</button>
+            <button class="btn btn-red btn-sm" onclick="_quitarAsig('${esc(dia)}','${esc(act.id)}','${esc(asig.pid)}');renderOperativo()">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+    });
+  }
+
+  // Responsabilidades list
+  let respList="";
+  responsabilidades.forEach((r,i)=>{
+    respList+=`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:${i%2===0?"#fafafa":"#fff"};border-radius:6px;border:1px solid #f1f5f9;margin-bottom:4px">
+      <div style="width:28px;height:28px;border-radius:6px;background:${r.color};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <span style="font-size:7px;font-weight:900;color:#fff">${esc(r.abrev)}</span>
+      </div>
+      <div style="flex:1"><div style="font-size:11px;font-weight:700">${esc(r.nombre)}</div>${r.subcategorias.length?`<div style="font-size:9px;color:#94a3b8">${r.subcategorias.map(esc).join(" · ")}</div>`:""}</div>
+      <button class="btn btn-gray btn-sm" onclick="abrirModalResp('${esc(r.id)}')">✏️</button>
+      <button class="btn btn-red btn-sm" onclick="eliminarResp('${esc(r.id)}')">🗑</button>
+    </div>`;
+  });
+
+  // Lugares list
+  let lugarList="";
+  lugares.forEach((l,i)=>{
+    lugarList+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${i%2===0?"#fafafa":"#fff"};border-radius:6px;border:1px solid #f1f5f9;margin-bottom:3px">
+      <span>📍</span><span style="flex:1;font-size:12px">${esc(l)}</span>
+      <button class="btn btn-gray btn-sm" onclick="abrirModalEditarLugar(${i},'${esc(l)}')">✏️</button>
+      <button class="btn btn-red btn-sm" onclick="eliminarLugar(${i})">🗑</button>
+    </div>`;
+  });
+
+  document.getElementById("tab-operativo").innerHTML = `
+    <h2 style="color:${BRAND.brown};margin:0 0 16px;font-size:16px;font-weight:700">🎛️ Centro Operativo</h2>
+    ${sectionHTML("📋 Asignaciones", filtradas.length, true, `
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <select class="sel" style="width:auto" onchange="opFiltDia=this.value;renderOperativo()">
+          <option value="Todos"${opFiltDia==="Todos"?" selected":""}>Todos los días</option>
+          ${DIAS.map(d=>`<option value="${d}"${opFiltDia===d?" selected":""}>${d}</option>`).join("")}
+        </select>
+        <input class="inp" style="width:180px" placeholder="Buscar persona..." value="${esc(opFiltPer)}" oninput="opFiltPer=this.value;renderOperativo()">
+        <button class="btn btn-gold btn-sm" onclick="abrirModalNuevaAsig()">+ Nueva</button>
+      </div>
+      <div style="overflow-x:auto;border-radius:8px;border:1px solid #f1f5f9">
+        <table style="width:100%;border-collapse:collapse;min-width:700px">
+          <thead><tr style="background:#f8fafc">
+            ${["Día","Act.","Persona","Responsabilidad","Lugar","Entrada","Salida",""].map(h=>`<th style="padding:6px 8px;text-align:left;font-size:10px;color:#64748b;border:1px solid #f1f5f9;font-weight:700">${h}</th>`).join("")}
+          </tr></thead>
+          <tbody>${asigRows}</tbody>
+        </table>
+      </div>
+    `)}
+    ${sectionHTML("🏷️ Responsabilidades", responsabilidades.length, false, `
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="btn btn-gold btn-sm" onclick="abrirModalResp()">+ Nueva</button>
+      </div>
+      ${respList}
+    `)}
+    ${sectionHTML("📍 Lugares", lugares.length, false, `
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <input class="inp" id="nuevo-lugar-inp" placeholder="Nuevo lugar..." style="flex:1">
+        <button class="btn btn-gold btn-sm" onclick="agregarLugar()">+ Añadir</button>
+      </div>
+      ${lugarList}
+    `)}
+  `;
+}
+
+function sectionHTML(title, count, defaultOpen, body) {
+  const id = "sec-"+Math.random().toString(36).slice(2,6);
+  return `<div class="section">
+    <button class="section-hdr ${defaultOpen?"open":""}" onclick="this.classList.toggle('open');document.getElementById('${id}').style.display=this.classList.contains('open')?'':'none'">
+      <span class="section-arrow ${defaultOpen?"":"closed"}">▼</span>
+      <span class="section-title">${title}</span>
+      <span class="section-count">${count}</span>
+    </button>
+    <div id="${id}" class="section-body" style="${defaultOpen?"":"display:none"}">${body}</div>
+  </div>`;
+}
+
+function abrirModalAsigEdit(dia, actId, pid) {
+  const act=(horario[dia]||[]).find(a=>a.id===actId);
+  const persona=personas.find(p=>p.id===pid);
+  const ex=(asignaciones[`${dia}|${actId}`]||[]).find(a=>a.pid===pid);
+  const sm2=sM(persona?.sub);
+  const respOpts=responsabilidades.map(r=>`<option value="${r.id}"${ex?.respId===r.id?" selected":""}>${esc(r.nombre)}</option>`).join("");
+  const lugarOpts=lugares.map(l=>`<option value="${esc(l)}"${(ex?.lugar)===l?" selected":""}>${esc(l)}</option>`).join("");
+  const resp=ex?responsabilidades.find(r=>r.id===ex.respId):null;
+  const subOpts=resp?.subcategorias?.length?resp.subcategorias.map(s=>`<option value="${esc(s)}"${ex?.subcat===s?" selected":""}>${esc(s)}</option>`).join(""):"";
+  openOverlay(`
+    <div style="background:${sm2.color};border-radius:8px;padding:10px 14px;margin-bottom:14px">
+      <div style="color:${sm2.text};font-weight:700;font-size:14px">${esc(persona?.nombre)}</div>
+      <div style="color:${sm2.text};opacity:.8;font-size:11px">${esc(act?.nombre)} · ${esc(dia)}</div>
+    </div>
+    <div class="fld"><label>Responsabilidad</label>
+      <select class="sel" id="ma-resp" onchange="_updateSubcats('${esc(pid)}','${esc(actId)}')">
+        <option value="">— Seleccionar —</option>${respOpts}
+      </select>
+    </div>
+    <div id="ma-subcat-wrap" style="${ex?.respId&&resp?.subcategorias?.length?"":"display:none"}">
+      <div class="fld"><label>Subcategoría (opcional)</label>
+        <select class="sel" id="ma-subcat"><option value="">— Sin subcategoría —</option>${subOpts}</select>
+      </div>
+    </div>
+    <div class="fld"><label>Lugar</label><select class="sel" id="ma-lugar">${lugarOpts}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Entrada</label><input class="inp" type="time" id="ma-ini" value="${ex?.ini||""}"></div>
+      <div class="fld"><label>Salida</label><input class="inp" type="time" id="ma-fin" value="${ex?.fin||""}"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-red" onclick="_quitarAsig('${esc(dia)}','${esc(actId)}','${esc(pid)}');renderOperativo();_closeOverlay()">Quitar</button>
+      <button class="btn btn-gold" onclick="_guardarAsigOp('${esc(dia)}','${esc(actId)}','${esc(pid)}')">Actualizar</button>
+    </div>
+  `);
+}
+window._guardarAsigOp = (dia,actId,pid) => {
+  window._guardarAsig(dia,actId,pid);
+  setTimeout(renderOperativo,100);
+};
+
+function abrirModalResp(id) {
+  const ex=id?responsabilidades.find(r=>r.id===id):null;
+  const f=ex?{...ex,subcategorias:[...ex.subcategorias]}:{id:`R${uid()}`,nombre:"",abrev:"",color:"#1d4ed8",subcategorias:[]};
+  openOverlay(`
+    <h3>${ex?"Editar":"Nueva"} responsabilidad</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;margin-bottom:10px">
+      <div class="fld"><label>Nombre</label><input class="inp" id="rf-nombre" value="${esc(f.nombre)}"></div>
+      <div class="fld"><label>Código</label><input class="inp" id="rf-abrev" value="${esc(f.abrev)}" style="font-weight:700" maxlength="6"></div>
+      <div class="fld"><label>Color</label><input type="color" id="rf-color" value="${f.color}" style="width:36px;height:30px;border:1px solid #e2e8f0;border-radius:5px;cursor:pointer"></div>
+    </div>
+    <div class="fld"><label>Subcategorías (separadas por Enter)</label>
+      <input class="inp" id="rf-subs" value="${f.subcategorias.map(esc).join(", ")}" placeholder="Sub1, Sub2, Sub3">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-gold" onclick="_guardarResp('${esc(f.id)}')">Guardar</button>
+    </div>
+  `);
+}
+window._guardarResp = (id) => {
+  const nombre=document.getElementById("rf-nombre").value.trim();
+  const abrev=document.getElementById("rf-abrev").value.trim().toUpperCase().slice(0,6);
+  const color=document.getElementById("rf-color").value;
+  const subs=document.getElementById("rf-subs").value.split(",").map(s=>s.trim()).filter(Boolean);
+  if(!nombre||!abrev) return;
+  const f={id,nombre,abrev,color,subcategorias:subs};
+  const ex=responsabilidades.find(r=>r.id===id);
+  responsabilidades=ex?responsabilidades.map(r=>r.id===id?f:r):[...responsabilidades,f];
+  persist(); _closeOverlay(); renderOperativo();
+};
+
+function eliminarResp(id) {
+  responsabilidades=responsabilidades.filter(r=>r.id!==id);
+  persist(); renderOperativo();
+}
+
+function abrirModalEditarLugar(idx, val) {
+  openOverlay(`
+    <h3>Editar lugar</h3>
+    <div class="fld"><label>Nombre</label><input class="inp" id="el-val" value="${esc(val)}"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-gold" onclick="lugares[${idx}]=document.getElementById('el-val').value.trim()||lugares[${idx}];persist();_closeOverlay();renderOperativo()">Guardar</button>
+    </div>
+  `);
+}
+function eliminarLugar(idx) { lugares=lugares.filter((_,i)=>i!==idx); persist(); renderOperativo(); }
+function agregarLugar() {
+  const v=document.getElementById("nuevo-lugar-inp")?.value.trim();
+  if(v){lugares=[...lugares,v];persist();renderOperativo();}
+}
+
+// ─── COMITÉ ──────────────────────────────────────────────────────────────────
+function renderComite() {
+  const gruposDyn=GRUPOS.map(g=>{
+    const extras=personas.filter(p=>!GRUPOS.flatMap(x=>x.ids).includes(p.id)&&p.sub===g.sub);
+    return{...g,members:[...g.ids.map(id=>personas.find(p=>p.id===id)).filter(Boolean),...extras]};
+  }).filter(g=>g.members.length);
+  const knownIds=GRUPOS.flatMap(g=>g.ids);
+  const otherExtras=personas.filter(p=>!knownIds.includes(p.id)&&!GRUPOS.some(g=>g.sub===p.sub));
+  if(otherExtras.length) gruposDyn.push({label:"OTROS",members:otherExtras});
+
+  let listHTML="";
+  gruposDyn.forEach(({label,members})=>{
+    listHTML+=`<div class="comite-grp-hdr">— ${esc(label)} —</div>`;
+    members.forEach(p=>{
+      listHTML+=`<div class="comite-person${selPersonaId===p.id?" sel":""}">
+        <button class="comite-person-btn" onclick="selPersonaId='${p.id}';renderComite()">${esc(p.nombre)}</button>
+        <button class="comite-icon-btn" onclick="abrirModalEditarPersona('${p.id}')">✏️</button>
+        <button class="comite-icon-btn del" onclick="eliminarPersona('${p.id}')">🗑</button>
+      </div>`;
+    });
+  });
+
+  const persona=selPersonaId?personas.find(p=>p.id===selPersonaId):null;
+  let detalleHTML="";
+  if(!persona) {
+    detalleHTML=`<div class="empty-state"><div class="empty-icon">👤</div><div style="font-size:13px">Selecciona una persona para ver su línea de trabajo</div></div>`;
+  } else {
+    const sm2=sM(persona.sub);
+    const linea=getLineaPersona(persona.id, comiteDiaFiltro);
+    const dayBtns=DIAS.map(d=>`<button class="day-pill${comiteDiaFiltro===d?" active":""}" style="color:${sm2.text}" onclick="comiteDiaFiltro='${d}';renderComite()">${d.slice(0,3)}</button>`).join("");
+    let listaRows=linea.length===0?`<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px">Sin asignaciones el ${esc(comiteDiaFiltro)}</div>`:
+      `<table class="linea-table"><thead><tr>${["Actividad","Responsabilidad","Subcategoría","Lugar","Entrada","Salida"].map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>`+
+      linea.map((r,i)=>{const c=tC(r.tipo);return`<tr style="background:${c.bg}">
+        <td style="font-weight:700">${esc(r.nombre)}</td>
+        <td>${r.resp?`<span class="resp-badge" style="background:${r.resp.color}">${esc(r.resp.abrev)}</span>${esc(r.resp.nombre)}`:"—"}</td>
+        <td style="color:#64748b">${esc(r.subcat||"—")}</td>
+        <td style="color:#64748b">${esc(r.lugar||"—")}</td>
+        <td style="font-weight:700;color:#1e3a8a">${esc(r.ini)}</td>
+        <td style="font-weight:700;color:#1e3a8a">${esc(r.fin)}</td>
+      </tr>`;}).join("")+`</tbody></table>`;
+
+    detalleHTML=`<div class="linea-card" style="border:2px solid ${sm2.color}">
+      <div class="linea-hdr" style="background:${sm2.color}">
+        <div><div class="linea-name" style="color:${sm2.text}">${esc(persona.nombre)}</div><div class="linea-sub" style="color:${sm2.text}">${esc(persona.sub)} · ${esc(persona.rol)}</div></div>
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
+          ${dayBtns}
+          <button class="btn btn-gold btn-sm" style="margin-left:4px" onclick="imprimirTarjeta('${persona.id}','${esc(comiteDiaFiltro)}')">🖨️ PDF</button>
+        </div>
+      </div>
+      ${listaRows}
+    </div>`;
+  }
+
+  document.getElementById("tab-comite").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-weight:700;color:${BRAND.brown};font-size:14px">Comité (${personas.length})</span>
+      <button class="btn btn-gold btn-sm" onclick="abrirModalNuevaPersona()">+ Añadir</button>
+    </div>
+    <div class="comite-layout">
+      <div id="comite-list">
+        <div class="comite-scroll">${listHTML}</div>
+      </div>
+      <div style="flex:1">${detalleHTML}</div>
+    </div>
+  `;
+}
+
+function getLineaPersona(pid, dia) {
+  return (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini)).map(act=>{
+    const a=(asignaciones[`${dia}|${act.id}`]||[]).find(x=>x.pid===pid);
+    if(!a) return null;
+    return{...act,resp:responsabilidades.find(r=>r.id===a.respId),subcat:a.subcat,lugar:a.lugar,ini:a.ini,fin:a.fin};
+  }).filter(Boolean);
+}
+
+function abrirModalNuevaPersona() { abrirModalPersona(null); }
+function abrirModalEditarPersona(id) { abrirModalPersona(id); }
+function abrirModalPersona(id) {
+  const ex=id?personas.find(p=>p.id===id):null;
+  const f=ex?{...ex}:{nombre:"",sub:"Brilla y Organiza",rol:"Miembro"};
+  const subOpts=Object.keys(SUB_META).map(s=>`<option value="${esc(s)}"${f.sub===s?" selected":""}>${esc(s)}</option>`).join("");
+  openOverlay(`
+    <h3>${ex?"Editar":"Nueva"} persona</h3>
+    <div class="fld"><label>Nombre completo</label><input class="inp" id="pf-nombre" value="${esc(f.nombre)}"></div>
+    <div class="fld"><label>Rol</label><input class="inp" id="pf-rol" value="${esc(f.rol)}"></div>
+    <div class="fld"><label>Subcomité</label><select class="sel" id="pf-sub">${subOpts}</select></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-gold" onclick="_guardarPersona('${id||""}')">Guardar</button>
+    </div>
+  `);
+}
+window._guardarPersona = (id) => {
+  const nombre=document.getElementById("pf-nombre").value.trim();
+  const rol=document.getElementById("pf-rol").value.trim();
+  const sub=document.getElementById("pf-sub").value;
+  if(!nombre) return;
+  if(id) { personas=personas.map(p=>p.id===id?{...p,nombre,rol,sub}:p); }
+  else { personas=[...personas,{id:`P${uid()}`,nombre,rol,sub}]; }
+  persist(); _closeOverlay(); renderComite();
+};
+
+function eliminarPersona(id) {
+  if(!confirm("¿Eliminar esta persona?")) return;
+  personas=personas.filter(p=>p.id!==id);
+  const a2={};
+  Object.entries(asignaciones).forEach(([k,v])=>{a2[k]=v.filter(x=>x.pid!==id);});
+  asignaciones=a2;
+  if(selPersonaId===id) selPersonaId=null;
+  persist(); renderComite();
+}
+
+// ─── IMPRIMIR ────────────────────────────────────────────────────────────────
+function renderImprimir() {
+  const dayBtns=DIAS.map(d=>`<button style="background:${imprimirDia===d?BRAND.gold:"#f1f5f9"};color:${imprimirDia===d?"#000":"#64748b"};border:1px solid ${imprimirDia===d?BRAND.gold:"#e2e8f0"};border-radius:7px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:12px" onclick="imprimirDia='${d}';renderImprimir()">${d}</button>`).join("");
+
+  let modeContent="";
+  if(imprimirModo==="horario") {
+    const actos=(horario[imprimirDia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+    const preview=actos.map(act=>{const c=tC(act.tipo);const n=(asignaciones[`${imprimirDia}|${act.id}`]||[]).length;
+      return`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border-radius:6px;margin-bottom:4px;border:1px solid #f1f5f9">
+        <div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${esc(act.abrev)}</div>
+        <span style="flex:1;font-size:11px;font-weight:600">${esc(act.nombre)}</span>
+        <span style="font-size:10px;color:#64748b">${esc(act.ini)}–${esc(act.fin)}</span>
+        <span style="font-size:10px;font-weight:700;color:${n>0?"#16a34a":"#94a3b8"}">${n} asig.</span>
+      </div>`;
+    }).join("");
+    modeContent=`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:14px">
+      <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:8px">Horario completo — ${esc(imprimirDia)}</h3>
+      <p style="font-size:11px;color:#64748b;margin-bottom:14px">Se abrirá una ventana lista para <strong>Ctrl+P → Guardar como PDF</strong>.</p>
+      <button class="btn btn-gold" onclick="printHorario()">🖨️ Generar PDF — ${esc(imprimirDia)}</button>
+    </div>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px">${preview}</div>`;
+  } else {
+    const tarjetas=personas.map(p=>{
+      const sm2=sM(p.sub);const n=getLineaPersona(p.id,imprimirDia).length;
+      return`<div class="tarjeta-item">
+        <div style="width:8px;height:8px;border-radius:50%;background:${sm2.color};flex-shrink:0"></div>
+        <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nombre)}</div><div style="font-size:9px;color:#94a3b8">${n} asignaciones</div></div>
+        <button class="btn btn-gold btn-sm" onclick="imprimirTarjeta('${p.id}','${esc(imprimirDia)}')">PDF</button>
+      </div>`;
+    }).join("");
+    modeContent=`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:4px">Tarjetas individuales — ${esc(imprimirDia)}</h3><p style="font-size:11px;color:#64748b">Imprime todas o una a una.</p></div>
+      <button class="btn btn-gold" onclick="printTodas()">🖨️ Imprimir TODAS</button>
+    </div>
+    <div class="tarjeta-grid">${tarjetas}</div>`;
+  }
+
+  document.getElementById("tab-imprimir").innerHTML=`
+    <h2 style="color:${BRAND.brown};margin:0 0 16px;font-size:16px;font-weight:700">🖨️ Imprimir y Exportar</h2>
+    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">${dayBtns}</div>
+    <div class="mode-toggle">
+      <button class="mode-btn${imprimirModo==="horario"?" active":""}" onclick="imprimirModo='horario';renderImprimir()">📋 Horario completo</button>
+      <button class="mode-btn${imprimirModo==="tarjetas"?" active":""}" onclick="imprimirModo='tarjetas';renderImprimir()">🪪 Tarjetas individuales</button>
+    </div>
+    ${modeContent}
+  `;
+}
+
+function baseHTML(title, body) {
+  return `<!DOCTYPE html><html lang="es"><head><title>${title}</title>
+  <meta charset="UTF-8">
+  <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:20px;font-size:11px}h1{font-size:15px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:14px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #e2e8f0;padding:6px 8px;font-size:11px}th{background:#f8fafc;font-weight:700}.card{border-radius:8px;overflow:hidden;margin-bottom:12px;page-break-inside:avoid}.card-hdr{padding:10px 12px}.lema{font-size:9px;color:#94a3b8;text-align:center;margin-top:16px}@media print{.no-print{display:none}}</style>
+  </head><body>
+  <button class="no-print" onclick="window.print()" style="margin-bottom:12px;padding:7px 18px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700">🖨️ Imprimir / Guardar como PDF</button>
+  <h1>Conferencia JAS 2026 · Brillar con Su Luz</h1>
+  ${body}
+  <p class="lema">✨ Brillar con Su Luz — ${new Date().toLocaleDateString("es-ES")}</p>
+  </body></html>`;
+}
+
+function cardHTMLPersona(p, dia) {
+  const linea=getLineaPersona(p.id, dia);
+  const sm2=sM(p.sub);
+  const rows=linea.length?`<table><tr><th>Actividad</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${linea.map(r=>{const c=tC(r.tipo);return`<tr style="background:${c.bg}"><td>${esc(r.nombre)}</td><td>${r.resp?esc(r.resp.nombre):"—"}</td><td>${esc(r.lugar||"—")}</td><td>${esc(r.ini)}</td><td>${esc(r.fin)}</td></tr>`;}).join("")}</table>`:`<div style="padding:10px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`;
+  return `<div class="card" style="border:2px solid ${sm2.color}"><div class="card-hdr" style="background:${sm2.color};color:${sm2.text}"><strong style="font-size:13px">${esc(p.nombre)}</strong> · <span style="font-size:10px">${esc(p.sub)} · ${esc(p.rol)} · ${esc(dia)}</span></div>${rows}</div>`;
+}
+
+function imprimirTarjeta(pid, dia) {
+  const p=personas.find(x=>x.id===pid);
+  if(!p) return;
+  const w=window.open("","_blank");
+  w.document.write(baseHTML(`${p.nombre} — ${dia}`, cardHTMLPersona(p,dia)));
+  w.document.close();
+}
+function printHorario() {
+  const dia=imprimirDia;
+  const actos=(horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const body=`<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Horario completo — ${esc(dia)}</p>`+actos.map(act=>{
+    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
+    return`<div class="card" style="border:2px solid ${c.fg}"><div class="card-hdr" style="background:${c.bg};color:${c.fg}"><strong>${esc(act.nombre)}</strong> · ${esc(act.ini)}–${esc(act.fin)}</div>${asigs.length?`<table><tr><th>#</th><th>Nombre</th><th>Subcomité</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${asigs.map((a,i)=>{const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);return`<tr><td>${i+1}</td><td>${esc(p2?.nombre||"?")}</td><td>${esc(p2?.sub||"?")}</td><td>${esc(r2?.nombre||"?")}</td><td>${esc(a.lugar||"—")}</td><td>${esc(a.ini)}</td><td>${esc(a.fin)}</td></tr>`;}).join("")}</table>`:`<div style="padding:8px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`}</div>`;
+  }).join("");
+  const w=window.open("","_blank");
+  w.document.write(baseHTML(`Horario ${dia}`,body));
+  w.document.close();
+}
+function printTodas() {
+  const dia=imprimirDia;
+  const w=window.open("","_blank");
+  w.document.write(baseHTML(`Tarjetas ${dia}`,`<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Tarjetas — ${esc(dia)}</p>`+personas.map(p=>cardHTMLPersona(p,dia)).join("")));
+  w.document.close();
+}
+
+// ─── EN VIVO ─────────────────────────────────────────────────────────────────
+function renderVivo() {
+  const dia=vivoDia, horaM=toM(vivoHora);
+  const hoy=horario[dia]||[];
+  const activas=hoy.filter(a=>toM(a.ini)<=horaM&&toM(a.fin)>horaM);
+  const proximas=hoy.filter(a=>toM(a.ini)>horaM&&toM(a.ini)<=horaM+60).sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const asigSet=new Set(); activas.forEach(a=>(asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
+  const libres=personas.filter(p=>!asigSet.has(p.id));
+
+  const dayBtns=DIAS.map(d=>`<option value="${d}"${d===vivoDia?" selected":""}>${d}</option>`).join("");
+
+  // Activas
+  let activasHTML="";
+  if(!activas.length) activasHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Sin actividades a las ${esc(vivoHora)}</div>`;
+  activas.forEach(act=>{
+    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
+    const rows=asigs.map(a=>{
+      const p=personas.find(x=>x.id===a.pid);const r=responsabilidades.find(x=>x.id===a.respId);const sm2=sM(p?.sub);
+      return`<div class="asig-row"><div style="width:7px;height:7px;border-radius:50%;background:${sm2.color}"></div><span style="flex:1;font-size:11px;font-weight:600">${esc(p?.nombre)}</span><span style="font-size:10px;color:#64748b">${esc(r?.abrev)}</span><button onclick="abrirModalAsigVivoEdit('${esc(a.pid)}','${esc(act.id)}')" style="background:transparent;border:1px solid #e2e8f0;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:9px;color:#64748b">✏</button></div>`;
+    }).join("");
+    activasHTML+=`<div class="act-card" style="border:2px solid ${c.fg}">
+      <div class="act-card-hdr" style="background:${c.bg};color:${c.fg}"><strong style="font-size:13px">${esc(act.nombre)} <span style="font-size:10px;opacity:.7">${esc(act.ini)}–${esc(act.fin)}</span></strong><span style="font-size:11px;font-weight:700">${asigs.length} asig.</span></div>
+      <div class="act-card-body">${rows}
+        <button onclick="abrirModalNuevaAsig('${esc(dia)}')" style="width:100%;background:transparent;border:1px dashed #e2e8f0;border-radius:5px;padding:4px;cursor:pointer;font-size:10px;color:#94a3b8;margin-top:4px">+ Asignar persona</button>
+      </div>
+    </div>`;
+  });
+
+  // Próximas
+  let proximasHTML="";
+  if(proximas.length) {
+    proximasHTML=`<h3 style="color:${BRAND.brown};font-size:13px;margin:14px 0 8px">🟡 Próximamente</h3>`;
+    proximas.forEach(act=>{
+      const c=tC(act.tipo);const mins=toM(act.ini)-horaM;
+      proximasHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;margin-bottom:5px">
+        <div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${esc(act.abrev)}</div>
+        <span style="flex:1;font-size:11px;font-weight:600">${esc(act.nombre)}</span>
+        <span style="font-size:10px;color:#f59e0b;font-weight:700">en ${mins} min</span>
+      </div>`;
+    });
+  }
+
+  // Libres
+  let libresHTML="";
+  if(!libres.length) libresHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Todo el comité está asignado</div>`;
+  else {
+    libresHTML=`<div class="libres-wrap">`;
+    Object.entries(SUB_META).forEach(([sub,meta])=>{
+      const lg=libres.filter(p=>p.sub===sub);
+      if(!lg.length) return;
+      libresHTML+=`<div class="libre-grp-hdr">— ${meta.abrev} —</div>`;
+      lg.forEach(p=>{
+        libresHTML+=`<div class="libre-person"><div style="width:8px;height:8px;border-radius:50%;background:${meta.color}"></div><span style="flex:1">${esc(p.nombre)}</span>${activas.length?`<button onclick="abrirModalAsig('${p.id}','${esc(activas[0].id)}')" style="background:${BRAND.gold};border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:9px;font-weight:700">Asignar</button>`:""}</div>`;
+      });
+    });
+    libresHTML+=`</div>`;
+  }
+
+  document.getElementById("tab-vivo").innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div><h2 style="margin:0;color:${BRAND.brown};font-size:16px;font-weight:700">🔴 Operaciones en Vivo</h2><div style="font-size:11px;color:#64748b;margin-top:2px">Vista en tiempo real de la conferencia</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select class="sel" style="width:auto" onchange="vivoDia=this.value;renderVivo()">${dayBtns}</select>
+        <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px">
+          <span style="font-size:11px;color:#64748b">⏰</span>
+          <input type="time" value="${esc(vivoHora)}" onchange="vivoHora=this.value;renderVivo()" style="border:none;font-size:13px;font-weight:700;color:${BRAND.brown};background:transparent;outline:none">
+        </div>
+        <button class="btn btn-gray btn-sm" onclick="vivoHora=nowStr();renderVivo()">⟳ Ahora</button>
+      </div>
+    </div>
+    <div class="live-stats">
+      ${[
+        {l:"Activas ahora",v:activas.length,c:"#dc2626",bg:"#fee2e2"},
+        {l:"Asignados",v:asigSet.size,c:"#16a34a",bg:"#dcfce7"},
+        {l:"Libres",v:libres.length,c:"#f59e0b",bg:"#fef3c7"},
+        {l:"Total comité",v:personas.length,c:BRAND.brown,bg:"#fef9ec"},
+      ].map(s=>`<div class="live-stat" style="background:${s.bg};border:1px solid ${s.c}33"><div class="live-stat-num" style="color:${s.c}">${s.v}</div><div class="live-stat-lbl">${s.l}</div></div>`).join("")}
+    </div>
+    <div class="live-grid">
+      <div>
+        <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🟢 Ahora (${activas.length})</h3>
+        ${activasHTML}${proximasHTML}
+      </div>
+      <div>
+        <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🔵 Libres (${libres.length})</h3>
+        ${libresHTML}
+      </div>
+    </div>
+  `;
+}
+
+function abrirModalAsigVivoEdit(pid, actId) {
+  // Reuse the asig modal but for vivo tab
+  const dia=vivoDia;
+  const act=(horario[dia]||[]).find(a=>a.id===actId);
+  const persona=personas.find(p=>p.id===pid);
+  const ex=(asignaciones[`${dia}|${actId}`]||[]).find(a=>a.pid===pid);
+  const sm2=sM(persona?.sub);
+  const respOpts=responsabilidades.map(r=>`<option value="${r.id}"${ex?.respId===r.id?" selected":""}>${esc(r.nombre)}</option>`).join("");
+  const lugarOpts=lugares.map(l=>`<option value="${esc(l)}"${(ex?.lugar)===l?" selected":""}>${esc(l)}</option>`).join("");
+  openOverlay(`
+    <div style="background:${sm2.color};border-radius:8px;padding:10px 14px;margin-bottom:14px">
+      <div style="color:${sm2.text};font-weight:700;font-size:14px">${esc(persona?.nombre)}</div>
+      <div style="color:${sm2.text};opacity:.8;font-size:11px">${esc(act?.nombre)} · ${esc(dia)}</div>
+    </div>
+    <div class="fld"><label>Responsabilidad</label><select class="sel" id="ma-resp"><option value="">— Seleccionar —</option>${respOpts}</select></div>
+    <div class="fld"><label>Lugar</label><select class="sel" id="ma-lugar">${lugarOpts}</select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fld"><label>Entrada</label><input class="inp" type="time" id="ma-ini" value="${ex?.ini||""}"></div>
+      <div class="fld"><label>Salida</label><input class="inp" type="time" id="ma-fin" value="${ex?.fin||""}"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
+      <button class="btn btn-red" onclick="_quitarAsig('${esc(dia)}','${esc(actId)}','${esc(pid)}');renderVivo();_closeOverlay()">Quitar</button>
+      <button class="btn btn-gold" onclick="_guardarAsigVivo('${esc(dia)}','${esc(actId)}','${esc(pid)}')">Actualizar</button>
+    </div>
+  `);
+}
+window._guardarAsigVivo=(dia,actId,pid)=>{
+  const respId=document.getElementById("ma-resp").value;
+  if(!respId) return;
+  const lugar=document.getElementById("ma-lugar").value;
+  const ini=document.getElementById("ma-ini").value;
+  const fin=document.getElementById("ma-fin").value;
+  const k=`${dia}|${actId}`;
+  asignaciones[k]=[...(asignaciones[k]||[]).filter(x=>x.pid!==pid),{pid,respId,subcat:"",lugar,ini,fin}];
+  persist(); _closeOverlay(); renderVivo();
+};
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+loadData();
+updateHeaderStats();
+renderHorario();
+document.getElementById("day-bar").style.display = "flex";
+</script>
+</body>
+</html>
