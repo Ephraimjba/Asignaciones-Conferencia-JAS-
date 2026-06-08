@@ -22,8 +22,3 @@ La aplicación gestiona los flujos de personal de los siguientes frentes:
 - **B.SIR:** Brilla Sirviendo
 - **B.COM:** Brilla y Comparte
 
-## 🛠️ Instalación y Configuración
-
-1. Clona el repositorio:
-   ```bash
-   git clone [https://github.com/TU_USUARIO/TU_REPOSITORIO.git](https://github.com/TU_USUARIO/TU_REPOSITORIO.git)
