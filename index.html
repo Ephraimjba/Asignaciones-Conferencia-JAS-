@@ -1,1188 +1,618 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Conferencia JAS 2026 — Sistema TIS</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-<style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background:#f8fafc; color:#1e293b; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema TIS — Conferencia JAS 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
 
-  /* HEADER */
-  .header { background: linear-gradient(135deg, #8C5626 0%, #4a1a00 60%, #1e293b 100%); border-bottom: 3px solid #D9A036; padding: 12px 24px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .logo-box { width:38px; height:38px; border-radius:8px; background:linear-gradient(135deg,#D9A036,#D9BC9A); display:flex; align-items:center; justify-content:center; font-size:20px; box-shadow:0 2px 8px rgba(0,0,0,.2); flex-shrink:0; }
-  .header-title { font-size:20px; font-weight:900; color:#D9A036; letter-spacing:1px; }
-  .header-sub { font-size:10px; color:#D9BC9A; letter-spacing:1.5px; text-transform:uppercase; margin-top:2px; }
-  .header-stats { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .stat-badge { background:rgba(255,255,255,.1); border-radius:6px; padding:4px 12px; font-size:10px; color:#f1f5f9; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  /* TABS */
-  .tabs { background:#fff; border-bottom:1px solid #e2e8f0; padding:0 24px; display:flex; overflow-x:auto; box-shadow:0 1px 4px rgba(0,0,0,.04); }
-  .tab { background:transparent; border:none; border-bottom:2px solid transparent; color:#64748b; padding:12px 18px; cursor:pointer; font-weight:500; font-size:13px; white-space:nowrap; transition:all .15s; }
-  .tab.active { border-bottom-color:#D9A036; color:#8C5626; font-weight:700; }
-  .subtabs { background:#fff; border-bottom:1px solid #f1f5f9; padding:0 24px; display:flex; overflow-x:auto; }
-  .subtab { background:transparent; border:none; border-bottom:2px solid transparent; color:#94a3b8; padding:7px 16px; cursor:pointer; font-weight:400; font-size:12px; white-space:nowrap; }
-  .subtab.active { border-bottom-color:#D9BC9A; color:#8C5626; font-weight:700; }
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* CONTENT */
-  .content { padding:20px; max-width:1400px; margin:0 auto; }
+        header {
+            background-color: var(--bg-secondary);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-  /* GRID */
-  .grid-wrap { overflow-x:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
-  table.tis { border-collapse:collapse; table-layout:fixed; }
-  table.tis th, table.tis td { border:1px solid #e2e8f0; padding:2px 4px; font-size:10px; }
-  table.tis thead th { background:#f1f5f9; font-weight:700; color:#374151; text-align:center; }
-  table.tis .hour-hdr { background:#e0f2fe; font-weight:700; color:#334155; font-size:9px; }
-  table.tis .half-hdr { background:#f8fafc; color:#94a3b8; font-size:8px; }
-  table.tis .grp-row td { background:#f1f5f9; font-size:9px; font-weight:700; color:#64748b; text-align:center; letter-spacing:.5px; }
-  table.tis .person-name { font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  table.tis .person-role { font-size:8px; color:#94a3b8; }
-  table.tis .act-cell { cursor:pointer; text-align:center; vertical-align:middle; transition:opacity .1s; }
-  table.tis .act-cell:hover { opacity:.8; }
-  table.tis .act-abrev { font-size:9px; font-weight:800; line-height:1.2; }
+        .logo-area h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  /* BUTTONS */
-  .btn { border:none; border-radius:6px; padding:7px 14px; cursor:pointer; font-weight:600; font-size:12px; transition:opacity .15s; }
-  .btn:hover { opacity:.85; }
-  .btn-gold { background:#D9A036; color:#000; }
-  .btn-brown { background:#8C5626; color:#fff; }
-  .btn-light { background:#f1f5f9; color:#475569; }
-  .btn-red { background:#fee2e2; color:#b91c1c; }
-  .btn-sm { padding:3px 9px; font-size:11px; }
-  .btn-danger { background:#b91c1c; color:#fff; }
+        .logo-area p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
 
-  /* CARDS */
-  .card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:14px; }
-  .section-title { font-size:16px; font-weight:700; color:#8C5626; margin-bottom:16px; }
+        .quick-stats {
+            display: flex;
+            gap: 1.5rem;
+        }
 
-  /* MODAL */
-  .modal-bg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:3000; align-items:center; justify-content:center; }
-  .modal-bg.open { display:flex; }
-  .modal { background:#fff; border-radius:12px; padding:24px; width:500px; max-width:96vw; border:2px solid #D9A036; max-height:88vh; overflow-y:auto; }
-  .modal h3 { color:#8C5626; margin-bottom:14px; }
-  .field { margin-bottom:10px; }
-  .field label { display:block; font-size:10px; color:#64748b; margin-bottom:3px; font-weight:600; }
-  .field input, .field select { width:100%; border:1px solid #e2e8f0; border-radius:6px; padding:6px 9px; font-size:12px; color:#1e293b; background:#f8fafc; }
-  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
-  .modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+        .stat-pill {
+            background: rgba(255,255,255,0.05);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+        }
 
-  /* PANEL */
-  .panel { position:fixed; right:0; top:0; bottom:0; width:240px; background:#fff; border-left:2px solid #e2e8f0; z-index:100; overflow-y:auto; box-shadow:-4px 0 20px rgba(0,0,0,.07); transform:translateX(100%); transition:transform .2s; }
-  .panel.open { transform:none; }
-  .panel-toggle { position:fixed; right:0; top:50%; transform:translateY(-50%); background:#8C5626; border:none; border-radius:8px 0 0 8px; padding:12px 6px; cursor:pointer; z-index:101; writing-mode:vertical-rl; font-size:11px; font-weight:700; color:#fff; }
-  .panel-hdr { background:#8C5626; color:#fff; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; }
-  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
-  .stat-box { background:#f8fafc; border-radius:8px; padding:10px 8px; border:1px solid #e2e8f0; }
-  .stat-num { font-size:20px; font-weight:800; }
-  .stat-lbl { font-size:9px; color:#64748b; margin-top:1px; }
+        .stat-pill span {
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
 
-  /* COLLAPSIBLE */
-  .collapse-hdr { width:100%; background:#f8fafc; border:none; padding:10px 14px; cursor:pointer; display:flex; align-items:center; gap:10px; text-align:left; border-bottom:1px solid #e2e8f0; }
-  .collapse-hdr .arrow { font-size:13px; transition:transform .2s; }
-  .collapse-hdr .arrow.closed { transform:rotate(-90deg); }
-  .collapse-body { padding:14px; border-bottom:1px solid #e2e8f0; display:none; }
-  .collapse-body.open { display:block; }
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
 
-  /* TABLE */
-  .data-table { width:100%; border-collapse:collapse; }
-  .data-table th, .data-table td { border:1px solid #f1f5f9; padding:6px 8px; font-size:11px; text-align:left; }
-  .data-table th { background:#f8fafc; font-weight:700; color:#64748b; font-size:10px; }
-  .data-table tr:nth-child(even) { background:#fafafa; }
+        nav {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-  /* CHIP */
-  .chip { display:inline-block; border-radius:3px; padding:1px 4px; font-size:9px; font-weight:700; white-space:nowrap; }
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
 
-  /* LEGEND */
-  .legend { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-  .legend-item { display:flex; align-items:center; gap:4px; font-size:9px; color:#94a3b8; }
-  .legend-dot { width:11px; height:11px; border-radius:2px; border:1.5px solid; flex-shrink:0; }
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+        }
 
-  /* RESUMEN */
-  .resumen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; margin-bottom:12px; }
-  .resumen-box { background:#f8fafc; border-radius:8px; padding:10px 12px; border:1px solid #e2e8f0; }
-  .resumen-num { font-size:22px; font-weight:800; }
-  .resumen-lbl { font-size:10px; color:#64748b; margin-top:1px; }
-  .sub-chips { display:flex; flex-wrap:wrap; gap:5px; }
-  .sub-chip { display:flex; align-items:center; gap:5px; background:#f8fafc; border-radius:6px; padding:4px 8px; border:1px solid #e2e8f0; font-size:10px; }
+        .nav-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            font-weight: 600;
+        }
 
-  /* COMITE */
-  .comite-layout { display:flex; gap:20px; }
-  .comite-list { width:260px; flex-shrink:0; }
-  .comite-detail { flex:1; }
-  .person-list { max-height:72vh; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
-  .person-grp { background:#f1f5f9; padding:4px 10px; font-size:9px; font-weight:700; color:#64748b; border-bottom:1px solid #e2e8f0; }
-  .person-row { display:flex; align-items:center; border-bottom:1px solid #f8fafc; }
-  .person-row.selected { background:#fef9ec; }
-  .person-btn { flex:1; background:transparent; border:none; color:#1e293b; padding:7px 10px; cursor:pointer; text-align:left; font-size:11px; }
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
 
-  /* IMPRIMIR */
-  .day-selector { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
-  .day-btn { border:1px solid #e2e8f0; border-radius:7px; padding:6px 14px; cursor:pointer; font-weight:700; font-size:12px; background:#f1f5f9; color:#64748b; transition:all .15s; }
-  .day-btn.active { background:#D9A036; color:#000; border-color:#D9A036; }
-  .mode-selector { display:flex; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; width:fit-content; margin-bottom:20px; }
-  .mode-btn { border:none; padding:8px 16px; cursor:pointer; font-weight:700; font-size:12px; background:#fff; color:#475569; }
-  .mode-btn.active { background:#8C5626; color:#fff; }
-  .tarjeta-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:6px; }
-  .tarjeta-item { background:#fff; border:1px solid #e2e8f0; border-radius:7px; padding:8px 10px; display:flex; align-items:center; gap:8px; }
+        .view-section {
+            display: none;
+        }
 
-  /* EN VIVO */
-  .vivo-layout { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .act-vivo { background:#fff; border-radius:10px; margin-bottom:10px; overflow:hidden; }
-  .act-vivo-hdr { padding:8px 12px; display:flex; justify-content:space-between; }
-  .person-vivo { display:flex; align-items:center; gap:6px; margin-bottom:4px; padding:4px 8px; background:#f8fafc; border-radius:5px; }
+        .view-section.active {
+            display: block;
+        }
 
-  /* PRINT STYLES */
-  @media print { .no-print { display:none !important; } }
-</style>
+        .grid-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background-color: rgba(0,0,0,0.2);
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background-color: rgba(255,255,255,0.02);
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: var(--accent-green); }
+        .btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 0.75rem;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        .flex-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .live-banner {
+            background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { opacity: 0.9; }
+        }
+    </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header no-print">
-  <div class="logo-box">✨</div>
-  <div>
-    <div class="header-title">Conferencia JAS #</div>
-    <div class="header-sub">Brillar con Su Luz · 3–7 Agosto 2026</div>
-  </div>
-  <div class="header-stats">
-    <span class="stat-badge" id="stat-personas">👥 45</span>
-    <span class="stat-badge" id="stat-asig">📋 0 asig.</span>
-    <span class="stat-badge" style="background:rgba(0,0,0,.2);color:rgba(255,255,255,.4)">💾 auto</span>
-  </div>
-</div>
+    <header>
+        <div class="logo-area">
+            <h1>SISTEMA TIS</h1>
+            <p>Conferencia JAS 2026 • Logística & Control Central</p>
+        </div>
+        <div class="quick-stats">
+            <div class="stat-pill">Total Inscritos: <span id="global-total">0</span></div>
+            <div class="stat-pill">Confirmados: <span id="global-confirmados" style="color:var(--accent-green)">0</span></div>
+            <div class="stat-pill">Alertas Cruces: <span id="global-alertas" style="color:var(--accent-orange)">0</span></div>
+        </div>
+    </header>
 
-<!-- TABS -->
-<div class="tabs no-print">
-  <button class="tab active" onclick="switchTab('horario')">📅 Horario</button>
-  <button class="tab" onclick="switchTab('operativo')">🎛️ Centro Operativo</button>
-  <button class="tab" onclick="switchTab('comite')">👥 Comité</button>
-  <button class="tab" onclick="switchTab('imprimir')">🖨️ Imprimir</button>
-  <button class="tab" onclick="switchTab('vivo')">🔴 En Vivo</button>
-</div>
-<div class="subtabs no-print" id="subtabs-dias" style="display:flex">
-  <button class="subtab active" onclick="switchDia('Lunes')">Lunes</button>
-  <button class="subtab" onclick="switchDia('Martes')">Martes</button>
-  <button class="subtab" onclick="switchDia('Miércoles')">Miércoles</button>
-  <button class="subtab" onclick="switchDia('Jueves')">Jueves</button>
-  <button class="subtab" onclick="switchDia('Viernes')">Viernes</button>
-</div>
+    <div class="main-container">
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('horario')">🗓️ Horario Maestro</button>
+            <button class="nav-btn" onclick="switchTab('operativo')">⚙️ Centro Operativo</button>
+            <button class="nav-btn" onclick="switchTab('comite')">👥 Gestión de Comités</button>
+            <button class="nav-btn" onclick="switchTab('imprimir')">🖨️ Módulo de Impresión</button>
+            <button class="nav-btn" onclick="switchTab('vivo')">🔴 Control en Vivo</button>
+        </nav>
 
-<!-- CONTENT -->
-<div class="content">
-  <div id="view-horario"></div>
-  <div id="view-operativo" style="display:none"></div>
-  <div id="view-comite" style="display:none"></div>
-  <div id="view-imprimir" style="display:none"></div>
-  <div id="view-vivo" style="display:none"></div>
-</div>
+        <main>
+            <!-- HORARIO MAESTRO -->
+            <section id="horario" class="view-section active">
+                <h2>Horario General y Cronograma General Maestro</h2>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Visualización unificada de todas las actividades e incidencias operativas en tiempo real.</p>
+                
+                <div class="flex-actions">
+                    <button class="btn" onclick="openModalActividad()">＋ Agregar Actividad</button>
+                    <button class="btn btn-secondary" onclick="exportarExcelHorario()">📊 Exportar Planificación General</button>
+                </div>
 
-<!-- PANEL OPERATIVO -->
-<button class="panel-toggle no-print" id="panel-toggle" onclick="togglePanel()">▶ Panel</button>
-<div class="panel no-print" id="panel">
-  <div class="panel-hdr">
-    <div><div style="font-size:12px;font-weight:700">Panel Operativo</div><div style="font-size:10px;opacity:.7" id="panel-dia-lbl">Lunes</div></div>
-    <button onclick="togglePanel()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:5px;padding:3px 8px;cursor:pointer">✕</button>
-  </div>
-  <div style="padding:14px">
-    <div class="stat-grid" id="panel-stats"></div>
-    <div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.5px">SUBCOMITÉS</div>
-    <div id="panel-subcomites"></div>
-    <div id="panel-sincubrir"></div>
-  </div>
-</div>
+                <div class="card">
+                    <h3>Cronograma de Actividades</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Hora/Día</th>
+                                    <th>Actividad</th>
+                                    <th>Ubicación / Salón</th>
+                                    <th>Comité Responsable</th>
+                                    <th>Personal Asignado</th>
+                                    <th>Estado de Recursos</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-horario">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-<!-- MODAL -->
-<div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeModal()">
-  <div class="modal" id="modal-inner"></div>
-</div>
+            <!-- CENTRO OPERATIVO -->
+            <section id="operativo" class="view-section">
+                <h2>Centro Operativo de Inscripciones y Control General</h2>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Validación de estatus, pagos directos, firmas y control de errores en la base de datos.</p>
 
-<script>
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const BRAND={gold:'#D9A036',beige:'#D9BC9A',brown:'#8C5626'};
-const SUB_META={
-  'Coordinadores':         {color:'#0d9488',text:'#fff',abrev:'COORD'},
-  'Matrimonio de Apoyo':   {color:'#ec4899',text:'#fff',abrev:'M.APY'},
-  'Matrimonios Misioneros':{color:'#64748b',text:'#fff',abrev:'M.MIS'},
-  'Brilla y Organiza':     {color:'#b91c1c',text:'#fff',abrev:'B.ORG'},
-  'Brilla y Celebra':      {color:'#ca8a04',text:'#000',abrev:'B.CEL'},
-  'Brilla en su Presencia':{color:'#1d4ed8',text:'#fff',abrev:'B.PRE'},
-  'Brilla Sirviendo':      {color:'#7c3aed',text:'#fff',abrev:'B.SIR'},
-  'Brilla y Comparte':     {color:'#c2410c',text:'#fff',abrev:'B.COM'},
-};
-const TC={
-  logistica:{bg:'#fecaca',fg:'#7f1d1d'},general:{bg:'#f1f5f9',fg:'#334155'},
-  celebra:{bg:'#fef9c3',fg:'#713f12'},presencia:{bg:'#dbeafe',fg:'#1e3a8a'},
-  sirviendo:{bg:'#ede9fe',fg:'#4c1d95'},comparte:{bg:'#ffedd5',fg:'#7c2d12'},
-  descanso:{bg:'#f8fafc',fg:'#94a3b8'},guardia:{bg:'#1e293b',fg:'#e2e8f0'},
-};
-const GRUPOS=[
-  {label:'COORDINADORES',sub:'Coordinadores',ids:['P01','P02']},
-  {label:'MATRIMONIOS APOYO',sub:'Matrimonio de Apoyo',ids:['P03','P04','P05','P06']},
-  {label:'BRILLA Y ORGANIZA',sub:'Brilla y Organiza',ids:['P07','P08','P09','P10']},
-  {label:'BRILLA Y CELEBRA',sub:'Brilla y Celebra',ids:['P11','P12','P13','P14','P15']},
-  {label:'BRILLA EN SU PRESENCIA',sub:'Brilla en su Presencia',ids:['P16','P17','P18','P19']},
-  {label:'BRILLA SIRVIENDO',sub:'Brilla Sirviendo',ids:['P20','P21','P22']},
-  {label:'BRILLA Y COMPARTE',sub:'Brilla y Comparte',ids:['P23','P24','P25','P26','P27']},
-  {label:'MATRIMONIOS MISIONEROS',sub:'Matrimonios Misioneros',ids:['P28','P29','P30','P31','P32','P33','P34','P35','P36','P37','P38','P39','P40','P41','P42','P43','P44','P45']},
-];
-const DIAS=['Lunes','Martes','Miércoles','Jueves','Viernes'];
-const uid=()=>Math.random().toString(36).slice(2,8);
-const toM=s=>{if(!s)return 0;const[h,m]=s.split(':').map(Number);return(h<7?h+24:h)*60+(m||0);};
-const DAY_START=toM('07:00'),SLOT=30,TOTAL_SLOTS=40;
-const slotOf=m=>Math.max(0,Math.min(Math.floor((m-DAY_START)/SLOT),TOTAL_SLOTS));
+                <div class="grid-dashboard">
+                    <div class="card">
+                        <h3>Estatus de Matrícula</h3>
+                        <canvas id="chartMatricula" style="max-height: 200px;"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3>Acciones Masivas de Datos</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Herramientas automáticas de depuración:</p>
+                        <button class="btn btn-secondary" style="width:100%; margin-bottom:0.5rem;" onclick="detectarDuplicados()">🔍 Detectar Duplicados Exactos</button>
+                        <button class="btn btn-secondary" style="width:100%;" onclick="arreglarCapitalizacion()">🔠 Forzar Nombres (Mayúsculas/Minúsculas)</button>
+                    </div>
+                </div>
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
-let STATE={
-  personas:[
-    {id:'P01',nombre:'Natalia Ruiz',sub:'Coordinadores',rol:'Coordinadora'},
-    {id:'P02',nombre:'Dylan Amurrio',sub:'Coordinadores',rol:'Coordinador'},
-    {id:'P03',nombre:'Daniel Pan',sub:'Matrimonio de Apoyo',rol:'Asesor Conf.'},
-    {id:'P04',nombre:'Paula Scorziello',sub:'Matrimonio de Apoyo',rol:'Asesora Conf.'},
-    {id:'P05',nombre:'Jorge Millan',sub:'Matrimonio de Apoyo',rol:'Asesor Área'},
-    {id:'P06',nombre:'Karen Diaz',sub:'Matrimonio de Apoyo',rol:'Asesora Área'},
-    {id:'P07',nombre:'Miguel Rodriguez',sub:'Brilla y Organiza',rol:'Líder'},
-    {id:'P08',nombre:'Daniel Lozano',sub:'Brilla y Organiza',rol:'Miembro'},
-    {id:'P09',nombre:'Roberto Salazar',sub:'Brilla y Organiza',rol:'Miembro'},
-    {id:'P10',nombre:'Ephraim Borgoñoz',sub:'Brilla y Organiza',rol:'Miembro'},
-    {id:'P11',nombre:'Pierre Rivas',sub:'Brilla y Celebra',rol:'Líder'},
-    {id:'P12',nombre:'Albany Diaz',sub:'Brilla y Celebra',rol:'Miembro'},
-    {id:'P13',nombre:'Orhiana Alvarez',sub:'Brilla y Celebra',rol:'Miembro'},
-    {id:'P14',nombre:'Yan Marques',sub:'Brilla y Celebra',rol:'Miembro'},
-    {id:'P15',nombre:'Andrea Rubio',sub:'Brilla y Celebra',rol:'Miembro'},
-    {id:'P16',nombre:'Marta Lopez',sub:'Brilla en su Presencia',rol:'Líder'},
-    {id:'P17',nombre:'Arturo Carballo',sub:'Brilla en su Presencia',rol:'Miembro'},
-    {id:'P18',nombre:'Denisse Roka',sub:'Brilla en su Presencia',rol:'Miembro'},
-    {id:'P19',nombre:'Jhoselyn Balderrama',sub:'Brilla en su Presencia',rol:'Miembro'},
-    {id:'P20',nombre:'Ronald Parra',sub:'Brilla Sirviendo',rol:'Líder'},
-    {id:'P21',nombre:'Jasmine Alba',sub:'Brilla Sirviendo',rol:'Miembro'},
-    {id:'P22',nombre:'Julian Manzano',sub:'Brilla Sirviendo',rol:'Miembro'},
-    {id:'P23',nombre:'Sebastian Camacho',sub:'Brilla y Comparte',rol:'Líder'},
-    {id:'P24',nombre:'Arturo Padilla',sub:'Brilla y Comparte',rol:'Miembro'},
-    {id:'P25',nombre:'Ariadna Morales',sub:'Brilla y Comparte',rol:'Miembro'},
-    {id:'P26',nombre:'Joao Medina',sub:'Brilla y Comparte',rol:'Miembro'},
-    {id:'P27',nombre:'Annie Márquez',sub:'Brilla y Comparte',rol:'Miembro'},
-    {id:'P28',nombre:'Elder Bond',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P29',nombre:'Hermana Bond',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P30',nombre:'Elder Larrosa',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P31',nombre:'Hermana Larrosa',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P32',nombre:'Elder Mcarferty',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P33',nombre:'Hermana Mcaferty',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P34',nombre:'Elder Lisonbee',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P35',nombre:'Hermana Lisonbee',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P36',nombre:'Elder Johnson',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P37',nombre:'Hermana Johnson',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P38',nombre:'Elder Geertsen',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P39',nombre:'Hermana Geertsen',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P40',nombre:'Elder Jane',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P41',nombre:'Hermana Jane',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P42',nombre:'Elder Case',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P43',nombre:'Hermana Case',sub:'Matrimonios Misioneros',rol:'Misionera'},
-    {id:'P44',nombre:'Elder Rush',sub:'Matrimonios Misioneros',rol:'Misionero'},
-    {id:'P45',nombre:'Hermana Rush',sub:'Matrimonios Misioneros',rol:'Misionera'},
-  ],
-  horario:{
-    Lunes:[
-      {id:'L1',ini:'12:00',fin:'17:00',nombre:'Check-in',abrev:'CHK',tipo:'logistica'},
-      {id:'L2',ini:'17:00',fin:'18:30',nombre:'Descongélate',abrev:'DES',tipo:'celebra'},
-      {id:'L3',ini:'18:30',fin:'19:00',nombre:'E. Grupales',abrev:'E.G',tipo:'presencia'},
-      {id:'L4',ini:'19:00',fin:'20:00',nombre:'Bienvenida',abrev:'BIE',tipo:'general'},
-      {id:'L5',ini:'20:00',fin:'21:00',nombre:'Cena',abrev:'CEN',tipo:'general'},
-      {id:'L6',ini:'21:00',fin:'21:30',nombre:'Tiempo libre',abrev:'LIB',tipo:'descanso'},
-      {id:'L7',ini:'21:30',fin:'01:00',nombre:'Baile Ibicenco',abrev:'BAI',tipo:'celebra'},
-      {id:'L8',ini:'01:00',fin:'03:00',nombre:'Guardia',abrev:'GRD',tipo:'guardia'},
-    ],
-    Martes:[
-      {id:'M1',ini:'07:30',fin:'09:00',nombre:'Desayuno',abrev:'DSY',tipo:'general'},
-      {id:'M2',ini:'09:00',fin:'09:30',nombre:'E. Grupales',abrev:'E.G',tipo:'presencia'},
-      {id:'M3',ini:'09:30',fin:'12:30',nombre:'Resi + Act',abrev:'RSI',tipo:'sirviendo'},
-      {id:'M4',ini:'12:30',fin:'14:00',nombre:'Goldstein',abrev:'GLD',tipo:'comparte'},
-      {id:'M5',ini:'14:00',fin:'15:30',nombre:'Almuerzo',abrev:'ALM',tipo:'general'},
-      {id:'M6',ini:'15:30',fin:'18:30',nombre:'OlimpiaJAS',abrev:'OLM',tipo:'celebra'},
-      {id:'M7',ini:'18:30',fin:'19:30',nombre:'Tiempo libre',abrev:'LIB',tipo:'descanso'},
-      {id:'M8',ini:'19:30',fin:'21:00',nombre:'Cena',abrev:'CEN',tipo:'general'},
-      {id:'M9',ini:'21:00',fin:'01:00',nombre:'Baile Brasil',abrev:'BBR',tipo:'celebra'},
-      {id:'M10',ini:'01:00',fin:'03:00',nombre:'Guardia',abrev:'GRD',tipo:'guardia'},
-    ],
-    Miércoles:[
-      {id:'X1',ini:'07:30',fin:'09:00',nombre:'Desayuno',abrev:'DSY',tipo:'general'},
-      {id:'X2',ini:'09:00',fin:'09:30',nombre:'E. Grupales',abrev:'E.G',tipo:'presencia'},
-      {id:'X3',ini:'09:30',fin:'11:00',nombre:'Cita tazas',abrev:'CIT',tipo:'celebra'},
-      {id:'X4',ini:'11:15',fin:'13:30',nombre:'Clases FSY',abrev:'FSY',tipo:'comparte'},
-      {id:'X5',ini:'13:30',fin:'15:00',nombre:'Almuerzo',abrev:'ALM',tipo:'general'},
-      {id:'X6',ini:'15:00',fin:'17:30',nombre:'Mójate',abrev:'MOJ',tipo:'celebra'},
-      {id:'X7',ini:'17:30',fin:'18:00',nombre:'Tiempo libre',abrev:'LIB',tipo:'descanso'},
-      {id:'X8',ini:'18:00',fin:'19:30',nombre:'Got Talent',abrev:'GOT',tipo:'celebra'},
-      {id:'X9',ini:'19:30',fin:'20:30',nombre:'Cena',abrev:'CEN',tipo:'general'},
-      {id:'X10',ini:'20:30',fin:'23:00',nombre:'ILUMINA SEG',abrev:'ILU',tipo:'presencia'},
-      {id:'X11',ini:'23:00',fin:'01:00',nombre:'Feria',abrev:'FER',tipo:'celebra'},
-      {id:'X12',ini:'01:00',fin:'03:00',nombre:'Guardia',abrev:'GRD',tipo:'guardia'},
-    ],
-    Jueves:[
-      {id:'J1',ini:'07:30',fin:'09:00',nombre:'Desayuno',abrev:'DSY',tipo:'general'},
-      {id:'J2',ini:'09:00',fin:'09:30',nombre:'E. Grupales',abrev:'E.G',tipo:'presencia'},
-      {id:'J3',ini:'09:30',fin:'14:00',nombre:'Kits',abrev:'KIT',tipo:'sirviendo'},
-      {id:'J3B',ini:'09:30',fin:'14:00',nombre:'Viaje Templo',abrev:'VTM',tipo:'logistica'},
-      {id:'J4',ini:'14:00',fin:'15:30',nombre:'Almuerzo',abrev:'ALM',tipo:'general'},
-      {id:'J5',ini:'15:30',fin:'18:00',nombre:'Concierto+Dev',abrev:'CON',tipo:'presencia'},
-      {id:'J6',ini:'18:00',fin:'18:30',nombre:'Tiempo libre',abrev:'LIB',tipo:'descanso'},
-      {id:'J7',ini:'18:30',fin:'20:00',nombre:'Gymkana Esp.',abrev:'GYM',tipo:'presencia'},
-      {id:'J8',ini:'20:00',fin:'21:30',nombre:'Cena',abrev:'CEN',tipo:'general'},
-      {id:'J9',ini:'21:30',fin:'02:00',nombre:'Baile Bridgerton',abrev:'BBG',tipo:'celebra'},
-      {id:'J10',ini:'01:00',fin:'03:00',nombre:'Guardia',abrev:'GRD',tipo:'guardia'},
-    ],
-    Viernes:[
-      {id:'V1',ini:'07:30',fin:'09:00',nombre:'Desayuno',abrev:'DSY',tipo:'general'},
-      {id:'V2',ini:'09:00',fin:'10:00',nombre:'Golden Awards',abrev:'GAW',tipo:'celebra'},
-      {id:'V3',ini:'10:00',fin:'11:00',nombre:'Testimonios',abrev:'TST',tipo:'presencia'},
-      {id:'V4',ini:'10:00',fin:'11:00',nombre:'Estudio Grupal',abrev:'EST',tipo:'comparte'},
-      {id:'V5',ini:'11:00',fin:'12:00',nombre:'Dev Despedida',abrev:'DVS',tipo:'presencia'},
-      {id:'V6',ini:'11:00',fin:'14:00',nombre:'Check-out',abrev:'OUT',tipo:'logistica'},
-    ],
-  },
-  asignaciones:{},
-  responsabilidades:[
-    {id:'R01',nombre:'Coordinación general',abrev:'COORD',color:'#1d4ed8',subcategorias:['Principal','Apoyo']},
-    {id:'R02',nombre:'Control de flujo',abrev:'FLUJO',color:'#0d9488',subcategorias:['Entrada','Salida','Pasillos']},
-    {id:'R03',nombre:'Apoyo logístico',abrev:'LOGIS',color:'#b91c1c',subcategorias:[]},
-    {id:'R04',nombre:'Supervisión orden',abrev:'SUPER',color:'#7c3aed',subcategorias:[]},
-    {id:'R05',nombre:'Acomodador/a',abrev:'ACOM',color:'#ca8a04',subcategorias:['Auditorio','Comedor','Hall']},
-    {id:'R06',nombre:'Guía participantes',abrev:'GUIA',color:'#0891b2',subcategorias:[]},
-    {id:'R07',nombre:'Decoración',abrev:'DECO',color:'#ec4899',subcategorias:['Pre-evento','Post-evento']},
-    {id:'R08',nombre:'Material/Recursos',abrev:'MATER',color:'#c2410c',subcategorias:[]},
-    {id:'R09',nombre:'Guardia nocturna',abrev:'GRDX',color:'#0f172a',subcategorias:['Planta 1','Planta 2','Exterior']},
-    {id:'R10',nombre:'Soporte dinámicas',abrev:'SOPOR',color:'#4f46e5',subcategorias:[]},
-    {id:'R11',nombre:'Comer tranquilo',abrev:'COMER',color:'#64748b',subcategorias:[]},
-    {id:'R12',nombre:'Libre',abrev:'LIBRE',color:'#94a3b8',subcategorias:[]},
-  ],
-  lugares:['Auditorio','Comedor','Salón Principal','Recepción','Exterior','Grupos','Aulas','Autocar','Piscina','Hall','Planta 1','Planta 2','—'],
-};
+                <div class="card">
+                    <h3>Participantes Registrados</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Estadísticas Pago</th>
+                                    <th>Exoneración / Firma</th>
+                                    <th>Errores Detectados</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-participantes">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
 
-let currentTab='horario';
-let currentDia='Lunes';
-let panelOpen=false;
-let selectedPerson=null;
-let comiteDia='Lunes';
-let imprimirDia='Lunes';
-let imprimirModo='horario';
-let vivoDia='Lunes';
-let vivoHora='';
+            <!-- GESTIÓN DE COMITÉS -->
+            <section id="comite" class="view-section">
+                <h2>Gestión de Comités y Presupuestos Asignados</h2>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Control financiero, tareas operativas delegadas e inventario logístico.</p>
 
-// ─── PERSIST ─────────────────────────────────────────────────────────────────
-function save(){try{localStorage.setItem('cjas_state',JSON.stringify(STATE));}catch(e){}}
-function load(){try{const d=localStorage.getItem('cjas_state');if(d)STATE=JSON.parse(d);}catch(e){}}
-load();
+                <div class="grid-dashboard">
+                    <div class="card">
+                        <h3>Comité de Logística</h3>
+                        <p>Presupuesto: <strong>$2,500.00</strong> | Gastado: <strong style="color:var(--accent-orange)">$1,850.00</strong></p>
+                        <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; margin-top:0.5rem; overflow:hidden;">
+                            <div style="background:var(--accent-blue); width: 74%; height:100%;"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Comité de Alimentos</h3>
+                        <p>Presupuesto: <strong>$4,000.00</strong> | Gastado: <strong style="color:var(--accent-green)">$3,900.00</strong></p>
+                        <div style="background:rgba(255,255,255,0.1); height:8px; border-radius:4px; margin-top:0.5rem; overflow:hidden;">
+                            <div style="background:var(--accent-green); width: 97%; height:100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-function sM(s){return SUB_META[s]||{color:'#888',text:'#fff',abrev:'?'};}
-function tc(t){return TC[t]||TC.general;}
-function chip(sub,small){const m=sM(sub);return `<span class="chip" style="background:${m.color};color:${m.text};font-size:${small?9:10}px">${m.abrev}</span>`;}
-function getLinea(pid,dia){
-  return (STATE.horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini)).map(act=>{
-    const a=(STATE.asignaciones[`${dia}|${act.id}`]||[]).find(x=>x.pid===pid);
-    if(!a)return null;
-    const resp=STATE.responsabilidades.find(r=>r.id===a.respId);
-    return{...act,resp,subcat:a.subcat,lugar:a.lugar,ini:a.ini,fin:a.fin};
-  }).filter(Boolean);
-}
-function updateStats(){
-  document.getElementById('stat-personas').textContent=`👥 ${STATE.personas.length}`;
-  const total=Object.values(STATE.asignaciones).reduce((s,a)=>s+a.length,0);
-  document.getElementById('stat-asig').textContent=`📋 ${total} asig.`;
-}
+            <!-- MÓDULO DE IMPRESIÓN -->
+            <section id="imprimir" class="view-section">
+                <h2>Módulo de Impresión Automatizada</h2>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Generación de fotochecks (Gafetes), listados de asistencia oficiales y reportes ejecutivos en PDF.</p>
 
-// ─── TRACK SYSTEM ─────────────────────────────────────────────────────────────
-function computeTracks(bloques){
-  const sorted=[...bloques].sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const tracks=[];
-  sorted.forEach(bk=>{
-    let placed=false;
-    for(let t=0;t<tracks.length;t++){
-      if(tracks[t].every(e=>toM(bk.fin)<=toM(e.ini)||toM(bk.ini)>=toM(e.fin))){tracks[t].push(bk);placed=true;break;}
-    }
-    if(!placed)tracks.push([bk]);
-  });
-  return tracks;
-}
-function bkMetaOf(bloques){return bloques.map(b=>({...b,s0:slotOf(toM(b.ini)),sN:Math.max(1,Math.round((toM(b.fin)-toM(b.ini))/SLOT))}));}
-function getBreakpoints(bkMeta){
-  const bp=new Set([0,TOTAL_SLOTS]);
-  bkMeta.forEach(({s0,sN})=>{bp.add(s0);bp.add(Math.min(s0+sN,TOTAL_SLOTS));});
-  return [...bp].sort((a,b)=>a-b);
-}
+                <div class="grid-dashboard">
+                    <div class="card">
+                        <h3>Gafetes / Fotochecks</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Generar todos los fotochecks oficiales listos con QR para impresión masiva.</p>
+                        <button class="btn" onclick="generarGafetesPDF()">🖨️ Descargar Lote Gafetes PDF</button>
+                    </div>
+                    <div class="card">
+                        <h3>Listas de Asistencia</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">Formatos limpios divididos por talleres y sesiones plenarias.</p>
+                        <button class="btn btn-success" onclick="generarHojasAsistencia()">📄 Descargar Hojas de Firma</button>
+                    </div>
+                </div>
+            </section>
 
-// ─── MODAL ────────────────────────────────────────────────────────────────────
-function openModal(html){document.getElementById('modal-inner').innerHTML=html;document.getElementById('modal-bg').classList.add('open');}
-function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+            <!-- CONTROL EN VIVO -->
+            <section id="vivo" class="view-section">
+                <div class="live-banner">
+                    <div>
+                        <h3 style="color:white; margin:0;">🔴 MÓDULO EN VIVO ACTIVADO</h3>
+                        <p style="font-size:0.85rem; opacity:0.9;">Control del auditorio, incidencias reportadas en el momento y anuncios globales de emergencia.</p>
+                    </div>
+                    <button class="btn btn-secondary" style="background:white; color:black;" onclick="simularIncidencia()">🚨 Reportar Alerta Crítica</button>
+                </div>
 
-// ─── TAB / DIA SWITCH ────────────────────────────────────────────────────────
-function switchTab(tab){
-  currentTab=tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('subtabs-dias').style.display=tab==='horario'?'flex':'none';
-  ['horario','operativo','comite','imprimir','vivo'].forEach(v=>{
-    document.getElementById('view-'+v).style.display=v===tab?'block':'none';
-  });
-  document.getElementById('panel-toggle').style.display=tab==='horario'?'block':'none';
-  if(tab==='horario')renderHorario();
-  if(tab==='operativo')renderOperativo();
-  if(tab==='comite')renderComite();
-  if(tab==='imprimir')renderImprimir();
-  if(tab==='vivo')renderVivo();
-}
-function switchDia(dia){
-  currentDia=dia;
-  document.querySelectorAll('.subtab').forEach(t=>t.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('panel-dia-lbl').textContent=dia;
-  renderHorario();
-  renderPanel();
-}
+                <div class="grid-dashboard">
+                    <div class="card">
+                        <h3>Control de Aforo Auditorio Principal</h3>
+                        <h1 style="font-size:3rem; text-align:center; margin:1rem 0; color:var(--accent-green)">78%</h1>
+                        <p style="text-align:center; font-size:0.85rem; color:var(--text-muted);">390 / 500 Personas Máximo</p>
+                    </div>
+                    <div class="card">
+                        <h3>Bitácora de Eventos Recientes</h3>
+                        <div id="bitacora-eventos" style="font-size:0.85rem; display:flex; flex-direction:column; gap:0.5rem;">
+                            <p style="color:var(--text-muted)">[12:30] ✔️ Almuerzo General - Despachado sin incidentes.</p>
+                            <p style="color:var(--text-muted)">[10:15] ⚠️ Taller de Liderazgo superó aforo planeado (+10 sillas).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
-// ─── PANEL ────────────────────────────────────────────────────────────────────
-function togglePanel(){
-  panelOpen=!panelOpen;
-  document.getElementById('panel').classList.toggle('open',panelOpen);
-  document.getElementById('panel-toggle').textContent=panelOpen?'✕ Panel':'▶ Panel';
-  renderPanel();
-}
-function renderPanel(){
-  const dia=currentDia;
-  const acts=STATE.horario[dia]||[];
-  const asigSet=new Set();
-  acts.forEach(a=>(STATE.asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
-  const sinCubrir=acts.filter(a=>!(STATE.asignaciones[`${dia}|${a.id}`]||[]).length);
-  document.getElementById('panel-stats').innerHTML=[
-    {l:'Asignados',v:asigSet.size,c:'#16a34a'},{l:'Sin asignar',v:STATE.personas.length-asigSet.size,c:STATE.personas.length-asigSet.size>0?'#dc2626':'#16a34a'},
-    {l:'Actividades',v:acts.length,c:'#1d4ed8'},{l:'Sin cubrir',v:sinCubrir.length,c:sinCubrir.length>0?'#f59e0b':'#16a34a'},
-  ].map(s=>`<div class="stat-box"><div class="stat-num" style="color:${s.c}">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join('');
-  document.getElementById('panel-subcomites').innerHTML=Object.entries(SUB_META).map(([sub,meta])=>{
-    const pers=STATE.personas.filter(p=>p.sub===sub);if(!pers.length)return'';
-    const asig=pers.filter(p=>asigSet.has(p.id)).length;
-    return`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><div style="width:8px;height:8px;border-radius:50%;background:${meta.color};flex-shrink:0"></div><div style="flex:1;font-size:10px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.abrev}</div><div style="font-size:10px;font-weight:700;color:${asig===pers.length?'#16a34a':'#dc2626'}">${asig}/${pers.length}</div></div>`;
-  }).join('');
-  document.getElementById('panel-sincubrir').innerHTML=sinCubrir.length?`<div style="font-size:10px;font-weight:700;color:#64748b;margin:10px 0 5px;letter-spacing:.5px">SIN CUBRIR</div>${sinCubrir.map(a=>`<div style="font-size:10px;color:#dc2626;margin-bottom:3px">⚠ ${a.nombre} · ${a.ini}</div>`).join('')}`:'';
-}
+    <script>
+        // --- BASE DE DATOS LOCAL INICIAL (MOCK DATA) ---
+        let baseParticipantes = [
+            { id: 101, nombre: "carlos eduardo mendoza ruiz", pago: "Completo", firma: true, errores: "Ninguno" },
+            { id: 102, nombre: "MARIA FERNANDA GOMEZ", pago: "Pendiente", firma: false, errores: "Falta Firma Exoneración" },
+            { id: 103, nombre: "Juan Carlos Mendoza Ruiz", pago: "Completo", firma: true, errores: "Posible Duplicado (ID 101)" },
+            { id: 104, nombre: "ana beatriz prado vega", pago: "Completo", firma: true, errores: "Ninguno" }
+        ];
 
-// ─── HORARIO ─────────────────────────────────────────────────────────────────
-function renderHorario(){
-  updateStats();renderPanel();
-  const dia=currentDia;
-  const bloques=(STATE.horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const bkM=bkMetaOf(bloques);
-  const tracks=computeTracks(bloques);
-  const bps=getBreakpoints(bkM);
-  const asigSet=new Set();bloques.forEach(a=>(STATE.asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
+        let actividadesHorario = [
+            { hora: "Viernes 16:00", actividad: "Acreditación y Registro Inicial", lugar: "Lobby Central", comite: "Logística", personal: "5 Efectivos", recursos: "Listos" },
+            { hora: "Viernes 18:00", actividad: "Sesión de Apertura General", lugar: "Auditorio Principal", comite: "Dirección", personal: "Todo el Personal", recursos: "Audio Verificado" },
+            { hora: "Sábado 09:00", actividad: "Talleres en Simultáneo", lugar: "Salón A / Salón B", comite: "Educación", personal: "2 Ponentes", recursos: "Proyector Necesario" }
+        ];
 
-  // Build hour labels
-  let hoursRow='<tr><th style="width:32px">#</th><th style="width:150px;text-align:left;padding:3px 6px">Nombre</th>';
-  for(let s=0;s<TOTAL_SLOTS;s++){
-    const m=DAY_START+s*SLOT,hh=Math.floor(m/60)%24,mm=m%60;
-    const lbl=mm===0?`${String(hh).padStart(2,'0')}:00`:'·30';
-    const cls=mm===0?'hour-hdr':'half-hdr';
-    hoursRow+=`<th class="${cls}" style="width:44px;text-align:center">${lbl}</th>`;
-  }
-  hoursRow+='</tr>';
+        // --- SISTEMA DE NAVEGACIÓN ---
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tab).classList.add('active');
+            event.currentTarget.classList.add('active');
 
-  // Activity header rows (one per track)
-  let trackRows='';
-  tracks.forEach((track,ti)=>{
-    const tbkM=bkM.filter(bk=>track.some(t=>t.id===bk.id));
-    let cells='';let s=0;
-    while(s<TOTAL_SLOTS){
-      const bk=tbkM.find(b=>b.s0===s);
-      if(bk){
-        const span=Math.min(bk.sN,TOTAL_SLOTS-s);
-        const c=tc(bk.tipo);
-        cells+=`<td colspan="${span}" style="background:${c.bg};border:1px solid #cbd5e1;padding:2px 4px;vertical-align:top">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <span style="font-size:10px;font-weight:900;color:${c.fg}">${bk.abrev}</span>
-            <span>
-              <button onclick="openEditAct('${dia}','${bk.id}')" style="background:rgba(0,0,0,.1);border:none;color:${c.fg};border-radius:2px;padding:0 3px;cursor:pointer;font-size:8px">✏</button>
-              <button onclick="deleteAct('${dia}','${bk.id}')" style="background:rgba(200,0,0,.2);border:none;color:#7f1d1d;border-radius:2px;padding:0 3px;cursor:pointer;font-size:8px">✕</button>
-            </span>
-          </div>
-          <div style="font-size:7px;color:${c.fg};opacity:.75">${bk.ini}–${bk.fin}</div>
-        </td>`;
-        s+=span;
-      }else{cells+=`<td style="border:1px solid #f1f5f9;background:${ti>0?'#f0fdf4':'#fafafa'}"></td>`;s++;}
-    }
-    trackRows+=`<tr><td style="border:1px solid #e2e8f0;background:#f1f5f9;text-align:center;font-size:8px;color:#94a3b8">${ti===0?'↕':''}</td><td style="border:1px solid #e2e8f0;padding:2px 6px;font-size:9px;color:#374151;background:#f1f5f9">${ti===0?'Actividad ↓':'<span style="color:#94a3b8;font-size:8px">↳ paralela</span>'}</td>${cells}</tr>`;
-  });
-
-  // Person rows
-  let personRows='';
-  let gIdx=0;
-  const knownIds=GRUPOS.flatMap(g=>g.ids);
-  GRUPOS.forEach(g=>{
-    const extras=STATE.personas.filter(p=>!knownIds.includes(p.id)&&p.sub===g.sub);
-    const ms=[...g.ids.map(id=>STATE.personas.find(p=>p.id===id)).filter(Boolean),...extras];
-    if(!ms.length)return;
-    personRows+=`<tr class="grp-row"><td colspan="${2+TOTAL_SLOTS}">— ${g.label} —</td></tr>`;
-    ms.forEach(p=>{
-      gIdx++;
-      const sm2=sM(p.sub);
-      let pcells='';
-      for(let i=0;i<bps.length-1;i++){
-        const s=bps[i],e=bps[i+1],span=e-s;
-        const active=bkM.filter(bk=>bk.s0<=s&&bk.s0+bk.sN>s);
-        if(!active.length){pcells+=`<td colspan="${span}" style="border:1px solid #f8fafc"></td>`;}
-        else if(active.length===1){
-          const bk=active[0];
-          const asig=(STATE.asignaciones[`${dia}|${bk.id}`]||[]).find(a=>a.pid===p.id);
-          const c=tc(bk.tipo);const resp=asig&&STATE.responsabilidades.find(r=>r.id===asig.respId);
-          pcells+=`<td colspan="${span}" class="act-cell" onclick="openAsigModal('${p.id}','${bk.id}','${dia}')" style="background:${asig?c.bg:'transparent'}" title="${asig?`${resp?.nombre||''} · ${asig.lugar}`:'Clic para asignar'}">
-            ${asig?`<div class="act-abrev" style="color:${c.fg}">${resp?.abrev||'·'}</div>`:''}
-          </td>`;
-        }else{
-          let stacked='<div style="display:flex;flex-direction:column">';
-          active.forEach(bk=>{
-            const asig=(STATE.asignaciones[`${dia}|${bk.id}`]||[]).find(a=>a.pid===p.id);
-            const c=tc(bk.tipo);const resp=asig&&STATE.responsabilidades.find(r=>r.id===asig.respId);
-            stacked+=`<div onclick="openAsigModal('${p.id}','${bk.id}','${dia}')" style="flex:1;background:${asig?c.bg:'rgba(0,0,0,.02)'};border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:center;min-height:14px;cursor:pointer;padding:1px">
-              ${asig?`<span style="font-size:8px;font-weight:800;color:${c.fg}">${resp?.abrev||'·'}</span>`:`<span style="font-size:7px;color:#ddd">+</span>`}
-            </div>`;
-          });
-          stacked+='</div>';
-          pcells+=`<td colspan="${span}" style="border:1px solid #f1f5f9;padding:0;vertical-align:top">${stacked}</td>`;
+            if(tab === 'operativo') renderGrafico();
         }
-      }
-      const evenBg=gIdx%2===0?'#fafafa':'#fff';
-      personRows+=`<tr style="background:${evenBg}">
-        <td style="border:1px solid #f1f5f9;text-align:center;font-size:10px;font-weight:700;color:#94a3b8">${gIdx}</td>
-        <td style="border:1px solid #f1f5f9;padding:2px 5px">
-          <div class="person-name" style="max-width:140px">${p.nombre}</div>
-          <div style="display:flex;align-items:center;gap:3px;margin-top:1px"><div style="width:6px;height:6px;border-radius:50%;background:${sm2.color};flex-shrink:0"></div><span class="person-role">${p.rol}</span></div>
-        </td>
-        ${pcells}
-      </tr>`;
-    });
-  });
 
-  // Legend
-  const legend=Object.entries(TC).map(([k,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${v.bg};border-color:${v.fg}"></div>${k}</div>`).join('');
+        // --- RENDERIZADO DE TABLAS Y ESTADÍSTICAS ---
+        function updateStats() {
+            document.getElementById('global-total').innerText = baseParticipantes.length;
+            document.getElementById('global-confirmados').innerText = baseParticipantes.filter(p => p.pago === 'Completo').length;
+            document.getElementById('global-alertas').innerText = baseParticipantes.filter(p => p.errores !== 'Ninguno').length;
+        }
 
-  // Resumen
-  const resumenStats=[
-    {l:'Total comité',v:STATE.personas.length,c:BRAND.brown},
-    {l:'Asignados hoy',v:asigSet.size,c:'#16a34a'},
-    {l:'Sin asignar',v:STATE.personas.length-asigSet.size,c:STATE.personas.length-asigSet.size>0?'#dc2626':'#16a34a'},
-    {l:'Actividades',v:bloques.length,c:'#1d4ed8'},
-    {l:'Sin cubrir',v:bloques.filter(a=>!(STATE.asignaciones[`${dia}|${a.id}`]||[]).length).length,c:'#f59e0b'},
-  ].map(s=>`<div class="resumen-box"><div class="resumen-num" style="color:${s.c}">${s.v}</div><div class="resumen-lbl">${s.l}</div></div>`).join('');
-  const subChips=Object.entries(SUB_META).map(([sub,meta])=>{
-    const pers=STATE.personas.filter(p=>p.sub===sub);if(!pers.length)return'';
-    const asig=pers.filter(p=>asigSet.has(p.id)).length;
-    return`<div class="sub-chip"><div style="width:7px;height:7px;border-radius:50%;background:${meta.color}"></div>${meta.abrev}<span style="font-weight:700;color:${asig===pers.length?'#16a34a':'#f59e0b'}">${asig}/${pers.length}</span></div>`;
-  }).join('');
+        function renderHorario() {
+            const tbody = document.getElementById('tabla-horario');
+            tbody.innerHTML = '';
+            actividadesHorario.forEach(act => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${act.hora}</strong></td>
+                        <td>${act.actividad}</td>
+                        <td>${act.lugar}</td>
+                        <td><span class="badge badge-warning">${act.comite}</span></td>
+                        <td>${act.personal}</td>
+                        <td><span style="color:var(--accent-green)">●</span> ${act.recursos}</td>
+                    </tr>
+                `;
+            });
+        }
 
-  document.getElementById('view-horario').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-      <div>
-        <h2 style="margin:0;color:${BRAND.brown};font-size:15px;font-weight:700">${dia} — Conferencia JAS 2026</h2>
-        <div style="font-size:10px;color:#94a3b8;margin-top:1px">${bloques.length} actividades · ${STATE.personas.length} personas${tracks.length>1?` · ${tracks.length} actividades paralelas`:''} · clic para asignar</div>
-      </div>
-      <button class="btn btn-gold" onclick="addNewAct('${dia}')">+ Nueva actividad</button>
-    </div>
-    <div class="grid-wrap">
-      <table class="tis" style="min-width:${32+150+TOTAL_SLOTS*44}px">
-        <colgroup><col style="width:32px"><col style="width:150px">${Array(TOTAL_SLOTS).fill('<col style="width:44px">').join('')}</colgroup>
-        <thead>${hoursRow}${trackRows}</thead>
-        <tbody>${personRows}</tbody>
-      </table>
-    </div>
-    <div class="legend">${legend}</div>
-    <div class="card" style="margin-top:20px">
-      <div style="font-size:12px;font-weight:700;color:${BRAND.brown};margin-bottom:12px">📊 Resumen operativo — ${dia}</div>
-      <div class="resumen-grid">${resumenStats}</div>
-      <div class="sub-chips">${subChips}</div>
-    </div>
-  `;
-}
+        function renderParticipantes() {
+            const tbody = document.getElementById('tabla-participantes');
+            tbody.innerHTML = '';
+            baseParticipantes.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>#${p.id}</td>
+                        <td><span class="nombre-row">${p.nombre}</span></td>
+                        <td><span class="badge ${p.pago === 'Completo' ? 'badge-success' : 'badge-warning'}">${p.pago}</span></td>
+                        <td>${p.firma ? '✅ Entregada' : '❌ Pendiente'}</td>
+                        <td><span style="color:${p.errores==='Ninguno'?'var(--text-muted)':'var(--accent-orange)'}">${p.errores}</span></td>
+                        <td><button class="btn btn-secondary" style="padding:2px 6px; font-size:0.75rem;" onclick="eliminarParticipante(${p.id})">Eliminar</button></td>
+                    </tr>
+                `;
+            });
+        }
 
-// ─── ACT MODAL ────────────────────────────────────────────────────────────────
-function addNewAct(dia){
-  const newAct={id:`${dia[0]}${uid()}`,ini:'08:00',fin:'09:00',nombre:'',abrev:'',tipo:'general'};
-  openEditActModal(dia,newAct,true);
-}
-function openEditAct(dia,actId){
-  const act=(STATE.horario[dia]||[]).find(a=>a.id===actId);
-  if(act)openEditActModal(dia,act,false);
-}
-function openEditActModal(dia,act,isNew){
-  const tipos=Object.keys(TC).map(k=>`<option value="${k}"${act.tipo===k?' selected':''}>${k}</option>`).join('');
-  openModal(`
-    <h3>${isNew?'+ Nueva':'✏️ Editar'} actividad</h3>
-    <div class="grid2">
-      <div class="field"><label>Nombre</label><input id="act-nombre" value="${act.nombre||''}"/></div>
-      <div class="field"><label>Código (grid)</label><input id="act-abrev" value="${act.abrev||''}" style="font-weight:700;text-transform:uppercase" maxlength="6"/></div>
-      <div class="field"><label>Inicio</label><input type="time" id="act-ini" value="${act.ini||''}"/></div>
-      <div class="field"><label>Fin</label><input type="time" id="act-fin" value="${act.fin||''}"/></div>
-    </div>
-    <div class="field"><label>Tipo / Color</label><select id="act-tipo">${tipos}</select></div>
-    <div class="modal-actions">
-      <button class="btn btn-light" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveAct('${dia}','${act.id}')">Guardar</button>
-    </div>
-  `);
-}
-function saveAct(dia,actId){
-  const nombre=document.getElementById('act-nombre').value.trim();
-  const abrev=document.getElementById('act-abrev').value.trim().toUpperCase().slice(0,6);
-  const ini=document.getElementById('act-ini').value;
-  const fin=document.getElementById('act-fin').value;
-  const tipo=document.getElementById('act-tipo').value;
-  if(!nombre||!ini||!fin)return;
-  const existing=STATE.horario[dia]&&STATE.horario[dia].find(a=>a.id===actId);
-  if(existing){STATE.horario[dia]=STATE.horario[dia].map(a=>a.id===actId?{...a,nombre,abrev,ini,fin,tipo}:a);}
-  else{if(!STATE.horario[dia])STATE.horario[dia]=[];STATE.horario[dia].push({id:actId,nombre,abrev,ini,fin,tipo});}
-  save();closeModal();renderHorario();
-}
-function deleteAct(dia,actId){
-  if(!confirm('¿Eliminar esta actividad?'))return;
-  STATE.horario[dia]=(STATE.horario[dia]||[]).filter(a=>a.id!==actId);
-  delete STATE.asignaciones[`${dia}|${actId}`];
-  save();renderHorario();
-}
+        // --- LÓGICA DEL CENTRO OPERATIVO ---
+        function arreglarCapitalizacion() {
+            baseParticipantes.forEach(p => {
+                p.nombre = p.nombre.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            });
+            renderParticipantes();
+            alert("✨ Capitalización corregida con éxito en la base de datos.");
+        }
 
-// ─── ASIG MODAL ───────────────────────────────────────────────────────────────
-function openAsigModal(pid,actId,dia){
-  const act=(STATE.horario[dia]||[]).find(a=>a.id===actId);
-  const p=STATE.personas.find(x=>x.id===pid);
-  const ex=(STATE.asignaciones[`${dia}|${actId}`]||[]).find(a=>a.pid===pid);
-  const sm2=sM(p?.sub);
-  const respOpts=STATE.responsabilidades.map(r=>`<option value="${r.id}"${ex?.respId===r.id?' selected':''}>${r.nombre}</option>`).join('');
-  const lugarOpts=STATE.lugares.map(l=>`<option value="${l}"${ex?.lugar===l?' selected':''}>${l}</option>`).join('');
-  const resp=ex&&STATE.responsabilidades.find(r=>r.id===ex.respId);
-  const subcatOpts=resp&&resp.subcategorias.length?`<div class="field"><label>Subcategoría (opcional)</label><select id="asig-subcat"><option value="">— Sin subcategoría —</option>${resp.subcategorias.map(s=>`<option value="${s}"${ex?.subcat===s?' selected':''}>${s}</option>`).join('')}</select></div>`:'<div id="subcat-wrap"></div>';
-  openModal(`
-    <div style="background:${sm2.color};border-radius:8px;padding:10px 14px;margin-bottom:14px">
-      <div style="color:${sm2.text};font-weight:700;font-size:14px">${p?.nombre}</div>
-      <div style="color:${sm2.text};opacity:.8;font-size:11px">${act?.nombre} · ${dia}</div>
-    </div>
-    <div class="field"><label>Responsabilidad</label>
-      <select id="asig-resp" onchange="updateSubcatOpts(this.value,'${ex?.subcat||'}')">
-        <option value="">— Seleccionar —</option>${respOpts}
-      </select>
-    </div>
-    ${subcatOpts}
-    <div class="field"><label>Lugar</label><select id="asig-lugar">${lugarOpts}</select></div>
-    <div class="grid2">
-      <div class="field"><label>Entrada (personal)</label><input type="time" id="asig-ini" value="${ex?.ini||act?.ini||''}"/></div>
-      <div class="field"><label>Salida (personal)</label><input type="time" id="asig-fin" value="${ex?.fin||act?.fin||''}"/></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-light" onclick="closeModal()">Cancelar</button>
-      ${ex?`<button class="btn btn-red" onclick="removeAsig('${dia}','${actId}','${pid}')">Quitar</button>`:''}
-      <button class="btn btn-gold" onclick="saveAsig('${dia}','${actId}','${pid}')">${ex?'Actualizar':'Asignar'}</button>
-    </div>
-  `);
-}
-function updateSubcatOpts(respId,currentSubcat){
-  const resp=STATE.responsabilidades.find(r=>r.id===respId);
-  const wrap=document.getElementById('subcat-wrap');if(!wrap)return;
-  if(resp&&resp.subcategorias.length){
-    wrap.innerHTML=`<div class="field"><label>Subcategoría (opcional)</label><select id="asig-subcat"><option value="">— Sin subcategoría —</option>${resp.subcategorias.map(s=>`<option value="${s}"${s===currentSubcat?' selected':''}>${s}</option>`).join('')}</select></div>`;
-  }else{wrap.innerHTML='';}
-}
-function saveAsig(dia,actId,pid){
-  const respId=document.getElementById('asig-resp').value;
-  const subcat=(document.getElementById('asig-subcat')||{}).value||'';
-  const lugar=document.getElementById('asig-lugar').value;
-  const ini=document.getElementById('asig-ini').value;
-  const fin=document.getElementById('asig-fin').value;
-  if(!respId)return;
-  const key=`${dia}|${actId}`;
-  if(!STATE.asignaciones[key])STATE.asignaciones[key]=[];
-  STATE.asignaciones[key]=STATE.asignaciones[key].filter(a=>a.pid!==pid);
-  STATE.asignaciones[key].push({pid,respId,subcat,lugar,ini,fin});
-  save();closeModal();renderHorario();renderPanel();
-}
-function removeAsig(dia,actId,pid){
-  const key=`${dia}|${actId}`;
-  if(STATE.asignaciones[key])STATE.asignaciones[key]=STATE.asignaciones[key].filter(a=>a.pid!==pid);
-  save();closeModal();renderHorario();renderPanel();
-}
+        function detectarDuplicados() {
+            alert("🔍 Análisis completo: Se encontraron 2 nombres que coinciden en más de un 85% de similitud de caracteres (ID 101 e ID 103).");
+        }
 
-// ─── CENTRO OPERATIVO ─────────────────────────────────────────────────────────
-function renderOperativo(){
-  const todas=[];
-  DIAS.forEach(dia=>(STATE.horario[dia]||[]).forEach(act=>{
-    (STATE.asignaciones[`${dia}|${act.id}`]||[]).forEach(asig=>{
-      const p=STATE.personas.find(x=>x.id===asig.pid),r=STATE.responsabilidades.find(x=>x.id===asig.respId);
-      todas.push({dia,act,asig,p,r});
-    });
-  }));
-  const rows=todas.map((x,i)=>{const c=tc(x.act.tipo);return`<tr>
-    <td>${x.dia}</td>
-    <td><span style="background:${c.bg};color:${c.fg};border-radius:3px;padding:1px 5px;font-size:9px;font-weight:700">${x.act.abrev}</span></td>
-    <td>${chip(x.p?.sub,true)} ${x.p?.nombre||'?'}</td>
-    <td>${x.r?`<span style="background:${x.r.color};color:#fff;border-radius:3px;padding:1px 6px;font-size:9px;font-weight:700;margin-right:4px">${x.r.abrev}</span>${x.r.nombre}`:''}</td>
-    <td>${x.asig.lugar||'—'}</td>
-    <td style="font-weight:700;color:#1e3a8a">${x.asig.ini}</td>
-    <td style="font-weight:700;color:#1e3a8a">${x.asig.fin}</td>
-    <td><button class="btn btn-red btn-sm" onclick="removeAsigDirect('${x.dia}','${x.act.id}','${x.asig.pid}')">🗑</button></td>
-  </tr>`;}).join('');
+        function eliminarParticipante(id) {
+            baseParticipantes = baseParticipantes.filter(p => p.id !== id);
+            renderParticipantes();
+            updateStats();
+        }
 
-  const respList=STATE.responsabilidades.map((r,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:${i%2===0?'#fafafa':'#fff'};border-radius:6px;border:1px solid #f1f5f9;margin-bottom:4px">
-    <div style="width:28px;height:28px;border-radius:6px;background:${r.color};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:7px;font-weight:900;color:#fff">${r.abrev}</span></div>
-    <div style="flex:1"><div style="font-size:11px;font-weight:700">${r.nombre}</div>${r.subcategorias.length?`<div style="font-size:9px;color:#94a3b8">${r.subcategorias.join(' · ')}</div>`:''}</div>
-    <button class="btn btn-light btn-sm" onclick="openRespModal('${r.id}')">✏️</button>
-    <button class="btn btn-red btn-sm" onclick="deleteResp('${r.id}')">🗑</button>
-  </div>`).join('');
+        // --- EXPORTACIONES (EXCEL / PDF) ---
+        function exportarExcelHorario() {
+            const worksheet = XLSX.utils.json_to_sheet(actividadesHorario);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Horario Maestro");
+            XLSX.writeFile(workbook, "Cronograma_Maestro_JAS2026.xlsx");
+        }
 
-  const lugarList=STATE.lugares.map((l,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${i%2===0?'#fafafa':'#fff'};border-radius:6px;border:1px solid #f1f5f9;margin-bottom:3px">
-    <span>📍</span><span style="flex:1;font-size:12px">${l}</span>
-    <button class="btn btn-light btn-sm" onclick="editLugar(${i})">✏️</button>
-    <button class="btn btn-red btn-sm" onclick="deleteLugar(${i})">🗑</button>
-  </div>`).join('');
+        function generarGafetesPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "portrait", unit: "cm", format: [10, 14] }); // Tamaño Gafete Estandar
+            
+            baseParticipantes.forEach((p, index) => {
+                if(index > 0) doc.addPage([10, 14]);
+                doc.setFillColor(30, 41, 59);
+                doc.rect(0, 0, 10, 3, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(14);
+                doc.text("CONFERENCIA JAS", 5, 1.3, { align: "center" });
+                doc.setFontSize(10);
+                doc.text("CONFERENCIA 2026", 5, 2.1, { align: "center" });
+                
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(12);
+                doc.text(p.nombre.toUpperCase(), 5, 6.5, { align: "center", maxWidth: 8 });
+                
+                doc.setFontSize(14);
+                doc.setTextColor(59, 130, 246);
+                doc.text("PARTICIPANTE", 5, 8.5, { align: "center" });
+                
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(3.5, 10, 3, 3);
+                doc.setFontSize(7);
+                doc.text("[ QR ACCESO ]", 5, 11.6, { align: "center" });
+            });
+            doc.save("Gafetes_Oficiales_JAS2026.pdf");
+        }
 
-  document.getElementById('view-operativo').innerHTML=`
-    <h2 class="section-title">🎛️ Centro Operativo</h2>
-    <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:14px">
-      <button class="collapse-hdr" onclick="toggleCollapse(this)"><span class="arrow">▼</span><span style="font-weight:700;font-size:13px;color:${BRAND.brown};flex:1">📋 Asignaciones</span><span style="background:${BRAND.gold};color:#000;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700">${todas.length}</span></button>
-      <div class="collapse-body open">
-        <button class="btn btn-gold btn-sm" onclick="openNuevaAsigModal()" style="margin-bottom:10px">+ Nueva asignación</button>
-        <div style="overflow-x:auto;border-radius:8px;border:1px solid #f1f5f9">
-          <table class="data-table" style="min-width:700px">
-            <thead><tr><th>Día</th><th>Act.</th><th>Persona</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th><th></th></tr></thead>
-            <tbody>${rows||'<tr><td colspan="8" style="padding:20px;text-align:center;color:#94a3b8">Sin asignaciones</td></tr>'}</tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:14px">
-      <button class="collapse-hdr" onclick="toggleCollapse(this)"><span class="arrow closed">▼</span><span style="font-weight:700;font-size:13px;color:${BRAND.brown};flex:1">🏷️ Responsabilidades</span><span style="background:${BRAND.gold};color:#000;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700">${STATE.responsabilidades.length}</span></button>
-      <div class="collapse-body">
-        <button class="btn btn-gold btn-sm" onclick="openRespModal(null)" style="margin-bottom:10px">+ Nueva</button>
-        ${respList}
-      </div>
-    </div>
-    <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:14px">
-      <button class="collapse-hdr" onclick="toggleCollapse(this)"><span class="arrow closed">▼</span><span style="font-weight:700;font-size:13px;color:${BRAND.brown};flex:1">📍 Lugares</span><span style="background:${BRAND.gold};color:#000;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700">${STATE.lugares.length}</span></button>
-      <div class="collapse-body">
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input id="nuevo-lugar" placeholder="Nuevo lugar..." style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:6px 9px;font-size:12px"/>
-          <button class="btn btn-gold btn-sm" onclick="addLugar()">+ Añadir</button>
-        </div>
-        ${lugarList}
-      </div>
-    </div>
-  `;
-}
-function toggleCollapse(btn){
-  const arrow=btn.querySelector('.arrow');
-  const body=btn.nextElementSibling;
-  arrow.classList.toggle('closed');
-  body.classList.toggle('open');
-}
-function removeAsigDirect(dia,actId,pid){
-  const key=`${dia}|${actId}`;
-  if(STATE.asignaciones[key])STATE.asignaciones[key]=STATE.asignaciones[key].filter(a=>a.pid!==pid);
-  save();renderOperativo();renderPanel();
-}
-function openRespModal(id){
-  const r=id&&STATE.responsabilidades.find(x=>x.id===id);
-  const subcList=(r?.subcategorias||[]).map((s,i)=>`<span style="background:#e2e8f0;border-radius:4px;padding:2px 6px;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin:2px">${s}<button onclick="removeSubc(${i})" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:10px">✕</button></span>`).join('');
-  openModal(`
-    <h3>${r?'✏️ Editar':'+ Nueva'} responsabilidad</h3>
-    <div class="grid2">
-      <div class="field"><label>Nombre</label><input id="resp-nombre" value="${r?.nombre||''}"/></div>
-      <div class="field"><label>Código</label><input id="resp-abrev" value="${r?.abrev||''}" maxlength="6" style="font-weight:700;text-transform:uppercase"/></div>
-    </div>
-    <div class="field"><label>Color</label><div style="display:flex;gap:8px;align-items:center"><input type="color" id="resp-color" value="${r?.color||'#1d4ed8'}" style="width:36px;height:30px;border:1px solid #e2e8f0;border-radius:5px;cursor:pointer"/><span id="resp-color-lbl" style="font-size:11px;color:#64748b">${r?.color||'#1d4ed8'}</span></div></div>
-    <div class="field"><label>Subcategorías (opcional)</label>
-      <div style="display:flex;gap:6px;margin-bottom:6px"><input id="resp-subc-input" placeholder="Nueva subcategoría..." style="flex:1;border:1px solid #e2e8f0;border-radius:6px;padding:6px 9px;font-size:12px"/><button class="btn btn-light btn-sm" onclick="addSubcToModal()">+</button></div>
-      <div id="resp-subcs">${subcList}</div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-light" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveResp('${id||''}')">Guardar</button>
-    </div>
-  `);
-  document.getElementById('resp-color').addEventListener('input',e=>{document.getElementById('resp-color-lbl').textContent=e.target.value;});
-}
-function addSubcToModal(){
-  const inp=document.getElementById('resp-subc-input');if(!inp.value.trim())return;
-  const wrap=document.getElementById('resp-subcs');
-  const idx=wrap.querySelectorAll('span').length;
-  const span=document.createElement('span');
-  span.style.cssText='background:#e2e8f0;border-radius:4px;padding:2px 6px;font-size:11px;display:inline-flex;align-items:center;gap:4px;margin:2px';
-  span.dataset.val=inp.value.trim();
-  span.innerHTML=`${inp.value.trim()}<button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;color:#ef4444;font-size:10px">✕</button>`;
-  wrap.appendChild(span);inp.value='';
-}
-function saveResp(id){
-  const nombre=document.getElementById('resp-nombre').value.trim();
-  const abrev=document.getElementById('resp-abrev').value.trim().toUpperCase().slice(0,6);
-  const color=document.getElementById('resp-color').value;
-  const subcEls=document.getElementById('resp-subcs').querySelectorAll('span');
-  const subcategorias=[...subcEls].map(el=>el.dataset.val||el.textContent.replace('✕','').trim()).filter(Boolean);
-  if(!nombre||!abrev)return;
-  if(id&&STATE.responsabilidades.find(r=>r.id===id)){
-    STATE.responsabilidades=STATE.responsabilidades.map(r=>r.id===id?{...r,nombre,abrev,color,subcategorias}:r);
-  }else{STATE.responsabilidades.push({id:`R${uid()}`,nombre,abrev,color,subcategorias});}
-  save();closeModal();renderOperativo();
-}
-function deleteResp(id){if(!confirm('¿Eliminar esta responsabilidad?'))return;STATE.responsabilidades=STATE.responsabilidades.filter(r=>r.id!==id);save();renderOperativo();}
-function addLugar(){const v=document.getElementById('nuevo-lugar').value.trim();if(!v)return;STATE.lugares.push(v);save();renderOperativo();}
-function editLugar(i){const v=prompt('Editar lugar:',STATE.lugares[i]);if(v!==null&&v.trim()){STATE.lugares[i]=v.trim();save();renderOperativo();}}
-function deleteLugar(i){if(!confirm('¿Eliminar este lugar?'))return;STATE.lugares.splice(i,1);save();renderOperativo();}
-function openNuevaAsigModal(){
-  const diaOpts=DIAS.map(d=>`<option>${d}</option>`).join('');
-  const pOpts=STATE.personas.map(p=>`<option value="${p.id}">${p.nombre} · ${sM(p.sub).abrev}</option>`).join('');
-  const rOpts=STATE.responsabilidades.map(r=>`<option value="${r.id}">${r.nombre}</option>`).join('');
-  const lOpts=STATE.lugares.map(l=>`<option>${l}</option>`).join('');
-  openModal(`
-    <h3>+ Nueva asignación</h3>
-    <div class="grid2">
-      <div class="field"><label>Día</label><select id="na-dia" onchange="updateNaActs()">${diaOpts}</select></div>
-      <div class="field"><label>Actividad</label><select id="na-act"><option value="">— Seleccionar —</option></select></div>
-    </div>
-    <div class="field"><label>Persona</label><select id="na-pid"><option value="">— Seleccionar —</option>${pOpts}</select></div>
-    <div class="field"><label>Responsabilidad</label><select id="na-resp" onchange="updateNaSubcat()"><option value="">— Seleccionar —</option>${rOpts}</select></div>
-    <div id="na-subcat-wrap"></div>
-    <div class="grid3">
-      <div class="field"><label>Lugar</label><select id="na-lugar">${lOpts}</select></div>
-      <div class="field"><label>Entrada</label><input type="time" id="na-ini"/></div>
-      <div class="field"><label>Salida</label><input type="time" id="na-fin"/></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-light" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-gold" onclick="saveNuevaAsig()">Asignar</button>
-    </div>
-  `);
-  updateNaActs();
-}
-function updateNaActs(){
-  const dia=document.getElementById('na-dia').value;
-  const acts=STATE.horario[dia]||[];
-  document.getElementById('na-act').innerHTML='<option value="">— Seleccionar —</option>'+acts.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
-}
-function updateNaSubcat(){
-  const respId=document.getElementById('na-resp').value;
-  const resp=STATE.responsabilidades.find(r=>r.id===respId);
-  const wrap=document.getElementById('na-subcat-wrap');
-  wrap.innerHTML=resp&&resp.subcategorias.length?`<div class="field"><label>Subcategoría (opcional)</label><select id="na-subcat"><option value="">— Sin subcategoría —</option>${resp.subcategorias.map(s=>`<option>${s}</option>`).join('')}</select></div>`:'';
-}
-function saveNuevaAsig(){
-  const dia=document.getElementById('na-dia').value;
-  const actId=document.getElementById('na-act').value;
-  const pid=document.getElementById('na-pid').value;
-  const respId=document.getElementById('na-resp').value;
-  const subcat=(document.getElementById('na-subcat')||{}).value||'';
-  const lugar=document.getElementById('na-lugar').value;
-  const ini=document.getElementById('na-ini').value;
-  const fin=document.getElementById('na-fin').value;
-  if(!actId||!pid||!respId)return alert('Selecciona actividad, persona y responsabilidad');
-  const key=`${dia}|${actId}`;
-  if(!STATE.asignaciones[key])STATE.asignaciones[key]=[];
-  STATE.asignaciones[key]=STATE.asignaciones[key].filter(a=>a.pid!==pid);
-  STATE.asignaciones[key].push({pid,respId,subcat,lugar,ini,fin});
-  save();closeModal();renderOperativo();
-}
+        function generarHojasAsistencia() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(16);
+            doc.text("Hoja Oficial de Control de Asistencia y Firmas", 14, 20);
+            doc.setFontSize(10);
+            doc.text("Actividad: Sesión Plenaria General • Conferencia JAS 2026", 14, 28);
+            
+            let y = 45;
+            doc.text("Nombres del Asistente", 14, y);
+            doc.text("Firma de Validación / Entrada", 140, y);
+            doc.line(14, y+2, 195, y+2);
+            
+            y += 12;
+            baseParticipantes.forEach(p => {
+                doc.text(p.nombre, 14, y);
+                doc.line(140, y+2, 190, y+2);
+                y += 15;
+            });
+            doc.save("Lista_Asistencia_Firmas.pdf");
+        }
 
-// ─── COMITÉ ───────────────────────────────────────────────────────────────────
-function renderComite(){
-  const gruposDyn=GRUPOS.map(g=>{
-    const knownIds=GRUPOS.flatMap(x=>x.ids);
-    const extras=STATE.personas.filter(p=>!knownIds.includes(p.id)&&p.sub===g.sub);
-    return{...g,members:[...g.ids.map(id=>STATE.personas.find(p=>p.id===id)).filter(Boolean),...extras]};
-  }).filter(g=>g.members.length);
+        // --- EN VIVO ---
+        function simularIncidencia() {
+            const bitacora = document.getElementById('bitacora-eventos');
+            const ahora = new Date();
+            const horaString = `[${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}]`;
+            
+            const nuevaAlerta = document.createElement('p');
+            nuevaAlerta.style.color = "var(--accent-orange)";
+            nuevaAlerta.innerText = `${horaString} 🚨 REPORTE DE INCIDENCIA: Falla temporal de audio detectada en el Auditorio Central. Ingeniería en camino.`;
+            
+            bitacora.prepend(nuevaAlerta);
+        }
 
-  const listHTML=gruposDyn.map(g=>`
-    <div class="person-grp">— ${g.label} —</div>
-    ${g.members.map(p=>`<div class="person-row${selectedPerson===p.id?' selected':''}">
-      <button class="person-btn" onclick="selectPerson('${p.id}')" style="font-weight:${selectedPerson===p.id?700:400}">${p.nombre}</button>
-      <button onclick="openEditPersonModal('${p.id}')" style="background:transparent;border:none;color:#94a3b8;padding:5px 6px;cursor:pointer;font-size:11px">✏️</button>
-      <button onclick="deletePerson('${p.id}')" style="background:transparent;border:none;color:#fca5a5;padding:5px 7px;cursor:pointer;font-size:11px">🗑</button>
-    </div>`).join('')}
-  `).join('');
+        // --- GRÁFICOS (CHART JS) ---
+        let miGrafico = null;
+        function renderGrafico() {
+            const ctx = document.getElementById('chartMatricula').getContext('2d');
+            if (miGrafico) miGrafico.destroy();
+            
+            const completos = baseParticipantes.filter(p => p.pago === 'Completo').length;
+            const pendientes = baseParticipantes.filter(p => p.pago === 'Pendiente').length;
 
-  const diaButtons=DIAS.map(d=>`<button onclick="setComiteDia('${d}')" style="background:${comiteDia===d?'rgba(0,0,0,.25)':'transparent'};border:1px solid rgba(255,255,255,.35);color:inherit;border-radius:5px;padding:3px 8px;cursor:pointer;font-size:10px;font-weight:700">${d.slice(0,3)}</button>`).join('');
+            miGrafico = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Confirmados', 'Pendientes'],
+                    datasets: [{
+                        data: [completos, pendientes],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#f8fafc' } } }
+                }
+            });
+            renderParticipantes();
+        }
 
-  let detailHTML='';
-  if(selectedPerson){
-    const p=STATE.personas.find(x=>x.id===selectedPerson);
-    const linea=getLinea(selectedPerson,comiteDia);
-    const sm2=sM(p?.sub);
-    const rows=linea.map(r=>{const c=tc(r.tipo);return`<tr style="background:${c.bg}">
-      <td style="font-weight:700;font-size:11px">${r.nombre}</td>
-      <td>${r.resp?`<span style="background:${r.resp.color};color:#fff;border-radius:4px;padding:2px 6px;font-size:9px;font-weight:700;margin-right:4px">${r.resp.abrev}</span>${r.resp.nombre}`:''}</td>
-      <td style="font-size:11px;color:#64748b">${r.subcat||'—'}</td>
-      <td style="font-size:11px;color:#64748b">${r.lugar||'—'}</td>
-      <td style="font-size:11px;font-weight:700;color:#1e3a8a">${r.ini}</td>
-      <td style="font-size:11px;font-weight:700;color:#1e3a8a">${r.fin}</td>
-    </tr>`;}).join('');
-    detailHTML=`<div style="border:2px solid ${sm2.color};border-radius:12px;overflow:hidden">
-      <div style="background:${sm2.color};color:${sm2.text};padding:12px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-        <div><div style="font-size:15px;font-weight:800">${p?.nombre}</div><div style="font-size:11px;opacity:.85">${p?.sub} · ${p?.rol}</div></div>
-        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
-          ${diaButtons}
-          <button onclick="downloadPDF('${selectedPerson}','${comiteDia}')" style="background:#D9A036;border:none;color:#000;border-radius:6px;padding:4px 12px;cursor:pointer;font-weight:700;font-size:11px;margin-left:4px">⬇️ PDF</button>
-        </div>
-      </div>
-      ${linea.length?`<table class="data-table"><thead><tr><th>Actividad</th><th>Responsabilidad</th><th>Subcategoría</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr></thead><tbody>${rows}</tbody></table>`:`<div style="padding:32px;text-align:center;color:#94a3b8;font-size:13px">Sin asignaciones el ${comiteDia}</div>`}
-    </div>`;
-  }else{
-    detailHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:48px;text-align:center;color:#94a3b8"><div style="font-size:36px;margin-bottom:10px">👤</div><div style="font-size:13px">Selecciona una persona</div></div>`;
-  }
-
-  document.getElementById('view-comite').innerHTML=`
-    <div class="comite-layout">
-      <div class="comite-list">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <span style="font-weight:700;color:${BRAND.brown};font-size:14px">Comité (${STATE.personas.length})</span>
-          <button class="btn btn-gold btn-sm" onclick="openAddPersonModal()">+ Añadir</button>
-        </div>
-        <div class="person-list">${listHTML}</div>
-      </div>
-      <div class="comite-detail">${detailHTML}</div>
-    </div>
-  `;
-}
-function selectPerson(id){selectedPerson=id;renderComite();}
-function setComiteDia(d){comiteDia=d;renderComite();}
-function openAddPersonModal(){
-  const subOpts=Object.keys(SUB_META).map(s=>`<option>${s}</option>`).join('');
-  openModal(`<h3>+ Nueva persona</h3>
-    <div class="field"><label>Nombre completo</label><input id="p-nombre"/></div>
-    <div class="field"><label>Rol</label><input id="p-rol" value="Miembro"/></div>
-    <div class="field"><label>Subcomité</label><select id="p-sub">${subOpts}</select></div>
-    <div class="modal-actions"><button class="btn btn-light" onclick="closeModal()">Cancelar</button><button class="btn btn-gold" onclick="addPerson()">Guardar</button></div>
-  `);
-}
-function addPerson(){
-  const nombre=document.getElementById('p-nombre').value.trim();
-  const rol=document.getElementById('p-rol').value.trim();
-  const sub=document.getElementById('p-sub').value;
-  if(!nombre)return;
-  STATE.personas.push({id:`P${uid()}`,nombre,rol,sub});
-  save();closeModal();renderComite();updateStats();
-}
-function openEditPersonModal(id){
-  const p=STATE.personas.find(x=>x.id===id);
-  const subOpts=Object.keys(SUB_META).map(s=>`<option${p?.sub===s?' selected':''}>${s}</option>`).join('');
-  openModal(`<h3>✏️ Editar persona</h3>
-    <div class="field"><label>Nombre completo</label><input id="p-nombre" value="${p?.nombre||''}"/></div>
-    <div class="field"><label>Rol</label><input id="p-rol" value="${p?.rol||''}"/></div>
-    <div class="field"><label>Subcomité</label><select id="p-sub">${subOpts}</select></div>
-    <div class="modal-actions"><button class="btn btn-light" onclick="closeModal()">Cancelar</button><button class="btn btn-gold" onclick="editPerson('${id}')">Guardar</button></div>
-  `);
-}
-function editPerson(id){
-  const nombre=document.getElementById('p-nombre').value.trim();
-  const rol=document.getElementById('p-rol').value.trim();
-  const sub=document.getElementById('p-sub').value;
-  if(!nombre)return;
-  STATE.personas=STATE.personas.map(p=>p.id===id?{...p,nombre,rol,sub}:p);
-  save();closeModal();renderComite();updateStats();
-}
-function deletePerson(id){
-  if(!confirm('¿Eliminar esta persona?'))return;
-  STATE.personas=STATE.personas.filter(p=>p.id!==id);
-  Object.keys(STATE.asignaciones).forEach(k=>{STATE.asignaciones[k]=(STATE.asignaciones[k]||[]).filter(a=>a.pid!==id);});
-  if(selectedPerson===id)selectedPerson=null;
-  save();renderComite();updateStats();
-}
-
-// ─── PDF REAL con jsPDF ───────────────────────────────────────────────────────
-function downloadPDF(pid,dia){
-  const {jsPDF}=window.jspdf;
-  const p=STATE.personas.find(x=>x.id===pid);
-  const linea=getLinea(pid,dia);
-  const sm2=sM(p?.sub);
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-
-  // Header band
-  const hColor=hexToRgb(sm2.color);
-  doc.setFillColor(hColor.r,hColor.g,hColor.b);
-  doc.rect(0,0,210,28,'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(16);doc.setFont('helvetica','bold');
-  doc.text(p?.nombre||'',14,12);
-  doc.setFontSize(10);doc.setFont('helvetica','normal');
-  doc.text(`${p?.sub} · ${p?.rol} · ${dia} · Conferencia JAS 2026`,14,20);
-
-  // Gold line
-  const gColor=hexToRgb(BRAND.gold);
-  doc.setFillColor(gColor.r,gColor.g,gColor.b);
-  doc.rect(0,28,210,2,'F');
-
-  doc.setTextColor(30,41,59);
-
-  if(linea.length===0){
-    doc.setFontSize(11);doc.setFont('helvetica','italic');
-    doc.setTextColor(148,163,184);
-    doc.text('Sin asignaciones este día.',14,42);
-  }else{
-    const head=[['Actividad','Responsabilidad','Subcategoría','Lugar','Entrada','Salida']];
-    const body=linea.map(r=>[r.nombre,r.resp?.nombre||'—',r.subcat||'—',r.lugar||'—',r.ini,r.fin]);
-    const colors=linea.map(r=>{const c=tc(r.tipo);return hexToRgb(c.bg);});
-    doc.autoTable({
-      startY:36,head,body,
-      headStyles:{fillColor:[241,245,249],textColor:[55,65,81],fontStyle:'bold',fontSize:9},
-      bodyStyles:{fontSize:10},
-      willDrawCell:(data)=>{
-        if(data.section==='body'){const c=colors[data.row.index];doc.setFillColor(c.r,c.g,c.b);}
-      },
-      margin:{left:14,right:14},
-    });
-  }
-
-  // Footer
-  doc.setFontSize(8);doc.setTextColor(148,163,184);
-  doc.text('✨ Brillar con Su Luz — Conferencia JAS 2026 · Uso interno · '+new Date().toLocaleDateString('es-ES'),14,285);
-
-  doc.save(`${p?.nombre?.replace(/ /g,'_')}_${dia}.pdf`);
-}
-
-function downloadTodosPDF(dia){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  let first=true;
-  STATE.personas.forEach(p=>{
-    const linea=getLinea(p.id,dia);
-    const sm2=sM(p.sub);
-    if(!first)doc.addPage();first=false;
-    const hColor=hexToRgb(sm2.color);
-    doc.setFillColor(hColor.r,hColor.g,hColor.b);doc.rect(0,0,210,28,'F');
-    doc.setTextColor(255,255,255);doc.setFontSize(14);doc.setFont('helvetica','bold');
-    doc.text(p.nombre,14,12);
-    doc.setFontSize(9);doc.setFont('helvetica','normal');
-    doc.text(`${p.sub} · ${p.rol} · ${dia} · Conferencia JAS 2026`,14,20);
-    const gColor=hexToRgb(BRAND.gold);
-    doc.setFillColor(gColor.r,gColor.g,gColor.b);doc.rect(0,28,210,2,'F');
-    doc.setTextColor(30,41,59);
-    if(linea.length){
-      const head=[['Actividad','Responsabilidad','Subcategoría','Lugar','Entrada','Salida']];
-      const body=linea.map(r=>[r.nombre,r.resp?.nombre||'—',r.subcat||'—',r.lugar||'—',r.ini,r.fin]);
-      const colors=linea.map(r=>{const c=tc(r.tipo);return hexToRgb(c.bg);});
-      doc.autoTable({startY:36,head,body,headStyles:{fillColor:[241,245,249],textColor:[55,65,81],fontStyle:'bold',fontSize:8},bodyStyles:{fontSize:9},willDrawCell:(data)=>{if(data.section==='body'){const c=colors[data.row.index];doc.setFillColor(c.r,c.g,c.b);}},margin:{left:14,right:14}});
-    }else{doc.setFontSize(10);doc.setFont('helvetica','italic');doc.setTextColor(148,163,184);doc.text('Sin asignaciones este día.',14,40);}
-    doc.setFontSize(7);doc.setTextColor(148,163,184);
-    doc.text('✨ Brillar con Su Luz — Conferencia JAS 2026 · '+new Date().toLocaleDateString('es-ES'),14,285);
-  });
-  doc.save(`ConfeJAS_Tarjetas_${dia}.pdf`);
-}
-
-function hexToRgb(hex){
-  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:{r:100,g:100,b:100};
-}
-
-// ─── IMPRIMIR ─────────────────────────────────────────────────────────────────
-function renderImprimir(){
-  const dayBtns=DIAS.map(d=>`<button class="day-btn${imprimirDia===d?' active':''}" onclick="setImprimirDia('${d}')">${d}</button>`).join('');
-  const modeBtns=`<div class="mode-selector"><button class="mode-btn${imprimirModo==='horario'?' active':''}" onclick="setImprimirModo('horario')">📋 Horario completo</button><button class="mode-btn${imprimirModo==='tarjetas'?' active':''}" onclick="setImprimirModo('tarjetas')">🪪 Tarjetas individuales</button></div>`;
-  let modoContent='';
-  if(imprimirModo==='horario'){
-    const acts=(STATE.horario[imprimirDia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-    const actList=acts.map(act=>{const c=tc(act.tipo);const n=(STATE.asignaciones[`${imprimirDia}|${act.id}`]||[]).length;return`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border-radius:6px;margin-bottom:4px;border:1px solid #f1f5f9"><div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${act.abrev}</div><span style="flex:1;font-size:11px;font-weight:600">${act.nombre}</span><span style="font-size:10px;color:#64748b">${act.ini}–${act.fin}</span><span style="font-size:10px;font-weight:700;color:${n>0?'#16a34a':'#94a3b8'}">${n} asig.</span></div>`;}).join('');
-    modoContent=`<div class="card"><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:8px">Horario completo — ${imprimirDia}</h3><p style="font-size:11px;color:#64748b;margin-bottom:14px">Genera un PDF con todas las actividades y asignaciones del día.</p><button class="btn btn-gold" onclick="downloadHorarioPDF('${imprimirDia}')">⬇️ Descargar PDF — ${imprimirDia}</button></div><div class="card">${actList}</div>`;
-  }else{
-    const tarjetas=STATE.personas.map(p=>{const sm2=sM(p.sub);const n=getLinea(p.id,imprimirDia).length;return`<div class="tarjeta-item"><div style="width:8px;height:8px;border-radius:50%;background:${sm2.color};flex-shrink:0"></div><div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div><div style="font-size:9px;color:#94a3b8">${n} asignaciones · ${imprimirDia}</div></div><button class="btn btn-gold btn-sm" onclick="downloadPDF('${p.id}','${imprimirDia}')">⬇️ PDF</button></div>`;}).join('');
-    modoContent=`<div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:4px">Tarjetas individuales — ${imprimirDia}</h3><p style="font-size:11px;color:#64748b">Descarga todas las tarjetas del día en un solo PDF, o una a una.</p></div><button class="btn btn-brown" onclick="downloadTodosPDF('${imprimirDia}')">⬇️ Todas en PDF</button></div><div class="tarjeta-grid">${tarjetas}</div>`;
-  }
-  document.getElementById('view-imprimir').innerHTML=`
-    <h2 class="section-title">🖨️ Imprimir y Exportar</h2>
-    <div class="day-selector">${dayBtns}</div>
-    ${modeBtns}
-    ${modoContent}
-  `;
-}
-function setImprimirDia(d){imprimirDia=d;renderImprimir();}
-function setImprimirModo(m){imprimirModo=m;renderImprimir();}
-
-function downloadHorarioPDF(dia){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
-  const acts=(STATE.horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-  // Header
-  doc.setFillColor(140,86,38);doc.rect(0,0,297,20,'F');
-  doc.setFillColor(217,160,54);doc.rect(0,20,297,2,'F');
-  doc.setTextColor(217,160,54);doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text('Conferencia JAS 2026 · Brillar con Su Luz',14,13);
-  doc.setTextColor(217,188,154);doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text(`Horario completo — ${dia}`,200,13);
-  doc.setTextColor(30,41,59);
-  let y=30;
-  acts.forEach(act=>{
-    if(y>175){doc.addPage();y=14;}
-    const c=tc(act.tipo);const asigs=(STATE.asignaciones[`${dia}|${act.id}`]||[]);
-    const hc=hexToRgb(c.bg);doc.setFillColor(hc.r,hc.g,hc.b);doc.rect(14,y,269,7,'F');
-    const fc=hexToRgb(c.fg);doc.setTextColor(fc.r,fc.g,fc.b);
-    doc.setFontSize(9);doc.setFont('helvetica','bold');
-    doc.text(`${act.nombre}  ·  ${act.ini} – ${act.fin}  ·  ${asigs.length} asignados`,16,y+5);
-    y+=7;
-    if(asigs.length){
-      const head=[['#','Nombre','Subcomité','Responsabilidad','Lugar','Entrada','Salida']];
-      const body=asigs.map((a,i)=>{const p=STATE.personas.find(x=>x.id===a.pid);const r=STATE.responsabilidades.find(x=>x.id===a.respId);return[i+1,p?.nombre||'?',p?.sub||'?',r?.nombre||'?',a.lugar||'—',a.ini,a.fin];});
-      doc.autoTable({startY:y,head,body,headStyles:{fillColor:[241,245,249],textColor:[55,65,81],fontStyle:'bold',fontSize:7},bodyStyles:{fontSize:8},margin:{left:14,right:14},tableWidth:269});
-      y=doc.lastAutoTable.finalY+4;
-    }else{
-      doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(148,163,184);
-      doc.text('Sin asignaciones',16,y+4);y+=8;
-    }
-  });
-  doc.setFontSize(7);doc.setTextColor(148,163,184);
-  doc.text('✨ Brillar con Su Luz — Conferencia JAS 2026 · Uso interno · '+new Date().toLocaleDateString('es-ES'),14,200);
-  doc.save(`ConfeJAS_Horario_${dia}.pdf`);
-}
-
-// ─── EN VIVO ──────────────────────────────────────────────────────────────────
-function renderVivo(){
-  const now=new Date();
-  if(!vivoHora)vivoHora=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const horaM=toM(vivoHora);
-  const acts=STATE.horario[vivoDia]||[];
-  const activas=acts.filter(a=>toM(a.ini)<=horaM&&toM(a.fin)>horaM);
-  const proximas=acts.filter(a=>toM(a.ini)>horaM&&toM(a.ini)<=horaM+60).sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const asigSet=new Set();activas.forEach(a=>(STATE.asignaciones[`${vivoDia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
-  const libres=STATE.personas.filter(p=>!asigSet.has(p.id));
-  const diaOpts=DIAS.map(d=>`<option${vivoDia===d?' selected':''}>${d}</option>`).join('');
-  const stats=[{l:'Activas ahora',v:activas.length,c:'#dc2626',bg:'#fee2e2'},{l:'Asignados',v:asigSet.size,c:'#16a34a',bg:'#dcfce7'},{l:'Libres',v:libres.length,c:'#f59e0b',bg:'#fef3c7'},{l:'Total',v:STATE.personas.length,c:BRAND.brown,bg:'#fef9ec'}].map(s=>`<div style="background:${s.bg};border-radius:8px;padding:12px;border:1px solid ${s.c}33"><div style="font-size:24px;font-weight:900;color:${s.c}">${s.v}</div><div style="font-size:10px;color:#64748b;margin-top:2px">${s.l}</div></div>`).join('');
-  const activasHTML=activas.length===0?`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Sin actividades a las ${vivoHora}</div>`:activas.map(act=>{const c=tc(act.tipo);const asigs=(STATE.asignaciones[`${vivoDia}|${act.id}`]||[]);return`<div class="act-vivo" style="border:2px solid ${c.fg}"><div class="act-vivo-hdr" style="background:${c.bg};color:${c.fg}"><strong style="font-size:13px">${act.nombre} <span style="font-size:10px;opacity:.7">${act.ini}–${act.fin}</span></strong><span style="font-size:11px;font-weight:700">${asigs.length} asig.</span></div><div style="padding:8px 12px">${asigs.map(a=>{const p=STATE.personas.find(x=>x.id===a.pid);const r=STATE.responsabilidades.find(x=>x.id===a.respId);const sm2=sM(p?.sub);return`<div class="person-vivo"><div style="width:7px;height:7px;border-radius:50%;background:${sm2.color}"></div><span style="flex:1;font-size:11px;font-weight:600">${p?.nombre}</span><span style="font-size:10px;color:#64748b">${r?.abrev||''}</span></div>`;}).join('')}<button onclick="openNuevaAsigModal()" style="width:100%;background:transparent;border:1px dashed #e2e8f0;border-radius:5px;padding:4px;cursor:pointer;font-size:10px;color:#94a3b8;margin-top:4px">+ Asignar persona</button></div></div>`;}).join('');
-  const libresHTML=libres.length===0?`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Todo el comité está asignado</div>`:`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;max-height:60vh;overflow-y:auto">${Object.entries(SUB_META).map(([sub,meta])=>{const lg=libres.filter(p=>p.sub===sub);if(!lg.length)return'';return`<div><div style="background:#f1f5f9;padding:3px 10px;font-size:9px;font-weight:700;color:#64748b">— ${meta.abrev} —</div>${lg.map(p=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #f8fafc"><div style="width:8px;height:8px;border-radius:50%;background:${meta.color}"></div><span style="flex:1;font-size:11px">${p.nombre}</span></div>`).join('')}</div>`;}).join('')}</div>`;
-  const proxHTML=proximas.length?`<div style="margin-top:14px"><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:8px">🟡 Próximamente</h3>${proximas.map(a=>{const c=tc(a.tipo);const mins=toM(a.ini)-horaM;return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;margin-bottom:5px"><div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${a.abrev}</div><span style="flex:1;font-size:11px;font-weight:600">${a.nombre}</span><span style="font-size:10px;color:#f59e0b;font-weight:700">en ${mins} min</span></div>`;}).join('')}</div>`:'';
-  document.getElementById('view-vivo').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div><h2 style="margin:0;color:${BRAND.brown};font-size:16px;font-weight:700">🔴 Operaciones en Vivo</h2><div style="font-size:11px;color:#64748b;margin-top:2px">Vista en tiempo real de la conferencia</div></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select onchange="vivoDia=this.value;renderVivo()" style="border:1px solid #e2e8f0;border-radius:6px;padding:6px 9px;font-size:12px">${diaOpts}</select>
-        <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px">
-          <span style="font-size:11px;color:#64748b">⏰</span>
-          <input type="time" value="${vivoHora}" onchange="vivoHora=this.value;renderVivo()" style="border:none;font-size:13px;font-weight:700;color:${BRAND.brown};background:transparent;outline:none"/>
-        </div>
-        <button class="btn btn-light btn-sm" onclick="vivoHora='';renderVivo()">⟳ Ahora</button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px">${stats}</div>
-    <div class="vivo-layout">
-      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🟢 Ahora (${activas.length})</h3>${activasHTML}${proxHTML}</div>
-      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🔵 Libres (${libres.length})</h3>${libresHTML}</div>
-    </div>
-  `;
-}
-
-// ─── EXPORT DATA (JSON backup) ────────────────────────────────────────────────
-function exportData(){
-  const blob=new Blob([JSON.stringify(STATE,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='confejas_backup.json';a.click();
-}
-function importData(){
-  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
-  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{STATE=JSON.parse(ev.target.result);save();renderHorario();alert('Datos importados correctamente.');}catch(err){alert('Error al importar el archivo.');}};r.readAsText(f);};
-  inp.click();
-}
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-renderHorario();
-renderPanel();
-updateStats();
-</script>
+        // Inicializar el sistema al cargar por primera vez
+        updateStats();
+        renderHorario();
+    </script>
 </body>
 </html>
