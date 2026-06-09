@@ -25,12 +25,13 @@
   #app-header {
     background: linear-gradient(135deg, #8C5626 0%, #4a1a00 60%, #1e293b 100%);
     border-bottom: 3px solid var(--gold);
-    padding: 10px 20px;
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 20px;
+    display: flex; align-items: center; justify-content: center;
     position: sticky; top: 0; z-index: 200;
+    text-align: center;
   }
   .hdr-logo { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg,#D9A036,#D9BC9A); display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3); }
-  .hdr-title { font-size: 18px; font-weight: 900; color: var(--gold); letter-spacing: 1px; font-family: 'DM Serif Display', serif; }
+  .hdr-title { font-size: 22px; font-weight: 900; color: var(--gold); letter-spacing: 2px; font-family: 'DM Serif Display', serif; text-transform: uppercase; }
   .hdr-sub { font-size: 9px; color: var(--beige); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
   .hdr-stats { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .hdr-badge { background: rgba(255,255,255,.1); border-radius: 6px; padding: 3px 9px; font-size: 10px; color: #f1f5f9; }
@@ -159,7 +160,7 @@
   .tarjeta-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 6px; }
   .tarjeta-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 7px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; }
 
-  /* ── En Vivo ── */
+  
   .live-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 10px; margin-bottom: 16px; }
   .live-stat { border-radius: 8px; padding: 12px; }
   .live-stat-num { font-size: 24px; font-weight: 900; }
@@ -192,9 +193,9 @@
 
 <!-- HEADER -->
 <div id="app-header">
-  <div>
-    <div class="hdr-title">Conferencia JAS 2026</div>
-    <div class="hdr-sub">Brillar con Su Luz</div>
+  <div style="text-align:center;">
+    <div class="hdr-title">Brillar con Su Luz</div>
+    <div class="hdr-sub">Conferencia JAS 2026</div>
   </div>
 </div>
 
@@ -203,8 +204,6 @@
   <button class="tab-btn active" data-tab="horario">📅 Horario</button>
   <button class="tab-btn" data-tab="operativo">🎛️ Centro Operativo</button>
   <button class="tab-btn" data-tab="comite">👥 Comité</button>
-  <button class="tab-btn" data-tab="imprimir">🖨️ Imprimir</button>
-  <button class="tab-btn" data-tab="vivo">🔴 En Vivo</button>
 </div>
 <div id="day-bar">
   <button class="day-btn active" data-day="Lunes">Lunes</button>
@@ -219,8 +218,6 @@
   <div id="tab-horario" class="tab-content active"></div>
   <div id="tab-operativo" class="tab-content"></div>
   <div id="tab-comite" class="tab-content"></div>
-  <div id="tab-imprimir" class="tab-content"></div>
-  <div id="tab-vivo" class="tab-content"></div>
 </div>
 
 <!-- Side panel -->
@@ -237,11 +234,28 @@
   <div class="panel-body" id="panel-body"></div>
 </div>
 
-<!-- OVERLAY -->
+<!-- PRINT PANEL -->
+<div id="print-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
+  <div style="background:#fff;border-radius:14px;width:100%;max-width:1100px;box-shadow:0 8px 40px rgba(0,0,0,.2);overflow:hidden;display:flex;flex-direction:column;margin:auto;">
+    <div style="background:var(--brown);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;">
+      <h2 id="pp-title" style="font-size:14px;font-weight:700;">Preferencias de impresión</h2>
+      <button onclick="closePrintPanel()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
+    </div>
+    <div style="display:grid;grid-template-columns:190px 1fr 260px;min-height:480px;">
+      <div id="pp-sidebar" style="background:#f8fafc;border-right:1px solid #e2e8f0;"></div>
+      <div id="pp-content" style="padding:20px;overflow-y:auto;max-height:560px;"></div>
+      <div id="pp-preview" style="background:#e8edf2;padding:16px;display:flex;flex-direction:column;align-items:center;gap:10px;border-left:1px solid #e2e8f0;"></div>
+    </div>
+    <div id="pp-footer" style="padding:14px 20px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;background:#fff;flex-wrap:wrap;"></div>
+  </div>
+</div>
+
+<!-- OVERLAY (modales) -->
 <div class="overlay" id="overlay" style="display:none" onclick="closeOverlay(event)">
   <div class="modal" id="modal-content"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
 const BRAND = {gold:"#D9A036",cream:"#F2F1EB",beige:"#D9BC9A",brown:"#8C5626"};
@@ -485,10 +499,10 @@ let currentTab = "horario";
 let currentDia = "Lunes";
 let selPersonaId = null;
 let comiteDiaFiltro = "Lunes";
-let imprimirDia = "Lunes";
-let imprimirModo = "horario";
-let vivoDia = "Lunes";
-let vivoHora = nowStr();
+
+
+
+
 let panelOpen = false;
 
 function nowStr() {
@@ -557,8 +571,6 @@ function render() {
     case "horario": renderHorario(); break;
     case "operativo": renderOperativo(); break;
     case "comite": renderComite(); break;
-    case "imprimir": renderImprimir(); break;
-    case "vivo": renderVivo(); break;
   }
 }
 
@@ -579,9 +591,17 @@ function renderHorario() {
       <h2 style="margin:0;color:${BRAND.brown};font-size:15px;font-weight:700">${esc(dia)} — Conferencia JAS 2026</h2>
       <div style="font-size:10px;color:#94a3b8;margin-top:1px">${bloques.length} actividades · ${personas.length} personas${tracks.length>1?` · ${tracks.length} actividades paralelas`:""} · clic para asignar</div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <button class="btn btn-gold" onclick="abrirModalNuevaAct()">+ Nueva actividad</button>
       <button class="btn btn-gray" onclick="exportarJSON()">⬇ Exportar datos</button>
+      <div style="position:relative;display:inline-block;" id="dd-wrap">
+        <button class="btn" style="background:#1e293b;color:#fff;" onclick="toggleDDImprimir()">🖨️ Impresión ▾</button>
+        <div id="dd-imprimir" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:210px;z-index:500;overflow:hidden;">
+          <button onclick="abrirPrintPanel('horario')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">📋 Horario completo del día</button>
+          <hr style="border:none;border-top:1px solid #f1f5f9;margin:2px 0;">
+          <button onclick="abrirPrintPanel('tarjetas')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">🪪 Tarjetas individuales</button>
+        </div>
+      </div>
     </div>
   </div>
   <div class="grid-wrap">
@@ -1219,7 +1239,7 @@ function renderComite() {
         <div><div class="linea-name" style="color:${sm2.text}">${esc(persona.nombre)}</div><div class="linea-sub" style="color:${sm2.text}">${esc(persona.sub)} · ${esc(persona.rol)}</div></div>
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">
           ${dayBtns}
-          <button class="btn btn-gold btn-sm" style="margin-left:4px" onclick="imprimirTarjeta('${persona.id}','${esc(comiteDiaFiltro)}')">🖨️ PDF</button>
+          <button class="btn btn-gold btn-sm" style="margin-left:4px" onclick="abrirPrintPanelPersona('${persona.id}','${esc(comiteDiaFiltro)}')">🖨️ PDF</button>
         </div>
       </div>
       ${listaRows}
@@ -1285,333 +1305,536 @@ function eliminarPersona(id) {
   persist(); renderComite();
 }
 
-// ─── IMPRIMIR ────────────────────────────────────────────────────────────────
-function renderImprimir() {
-  const dayBtns=DIAS.map(d=>`<button style="background:${imprimirDia===d?BRAND.gold:"#f1f5f9"};color:${imprimirDia===d?"#000":"#64748b"};border:1px solid ${imprimirDia===d?BRAND.gold:"#e2e8f0"};border-radius:7px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:12px" onclick="imprimirDia='${d}';renderImprimir()">${d}</button>`).join("");
 
-  let modeContent="";
-  if(imprimirModo==="horario") {
-    const actos=(horario[imprimirDia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-    const preview=actos.map(act=>{const c=tC(act.tipo);const n=(asignaciones[`${imprimirDia}|${act.id}`]||[]).length;
-      return`<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#fff;border-radius:6px;margin-bottom:4px;border:1px solid #f1f5f9">
-        <div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${esc(act.abrev)}</div>
-        <span style="flex:1;font-size:11px;font-weight:600">${esc(act.nombre)}</span>
-        <span style="font-size:10px;color:#64748b">${esc(act.ini)}–${esc(act.fin)}</span>
-        <span style="font-size:10px;font-weight:700;color:${n>0?"#16a34a":"#94a3b8"}">${n} asig.</span>
-      </div>`;
-    }).join("");
-    modeContent=`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:14px">
-      <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:8px">Horario completo — ${esc(imprimirDia)}</h3>
-      <p style="font-size:11px;color:#64748b;margin-bottom:14px">Se abrirá una ventana lista para <strong>Ctrl+P → Guardar como PDF</strong>.</p>
-      <button class="btn btn-gold" onclick="printHorario()">🖨️ Generar PDF — ${esc(imprimirDia)}</button>
-    </div>
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px">${preview}</div>`;
-  } else {
-    const tarjetas=personas.map(p=>{
-      const sm2=sM(p.sub);const n=getLineaPersona(p.id,imprimirDia).length;
-      return`<div class="tarjeta-item">
-        <div style="width:8px;height:8px;border-radius:50%;background:${sm2.color};flex-shrink:0"></div>
-        <div style="flex:1;min-width:0"><div style="font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.nombre)}</div><div style="font-size:9px;color:#94a3b8">${n} asignaciones</div></div>
-        <button class="btn btn-gold btn-sm" onclick="imprimirTarjeta('${p.id}','${esc(imprimirDia)}')">PDF</button>
-      </div>`;
-    }).join("");
-    modeContent=`<div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-      <div><h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:4px">Tarjetas individuales — ${esc(imprimirDia)}</h3><p style="font-size:11px;color:#64748b">Cada persona recibe su PDF en vertical, listo para fondo de pantalla o impresión.</p><p style="font-size:10px;color:#f59e0b;margin-top:4px">⚠ Permite ventanas emergentes en el navegador antes de pulsar.</p></div>
-      <button class="btn btn-gold" onclick="printTodas()">🖨️ PDF individual por persona (${personas.length})</button>
-    </div>
-    <div class="tarjeta-grid">${tarjetas}</div>`;
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const slugify = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_]/g,"");
+
+function toggleDDImprimir() {
+  const dd = document.getElementById("dd-imprimir");
+  dd.style.display = dd.style.display === "none" ? "block" : "none";
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest("#dd-wrap")) {
+    const dd = document.getElementById("dd-imprimir");
+    if (dd) dd.style.display = "none";
   }
+});
 
-  document.getElementById("tab-imprimir").innerHTML=`
-    <h2 style="color:${BRAND.brown};margin:0 0 16px;font-size:16px;font-weight:700">🖨️ Imprimir y Exportar</h2>
-    <div style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap">${dayBtns}</div>
-    <div class="mode-toggle">
-      <button class="mode-btn${imprimirModo==="horario"?" active":""}" onclick="imprimirModo='horario';renderImprimir()">📋 Horario completo</button>
-      <button class="mode-btn${imprimirModo==="tarjetas"?" active":""}" onclick="imprimirModo='tarjetas';renderImprimir()">🪪 Tarjetas individuales</button>
-    </div>
-    ${modeContent}
+// ── PRINT PANEL STATE ────────────────────────────────────────────────────────
+let ppMode = "horario";
+let ppDia = null;
+let ppPersonaId = null;
+let ppTab = "opciones";
+let ppPrefs = {
+  h_pageSize:"A4", h_orient:"landscape", h_order:"numero", h_format:"regular",
+  h_markMin:"30", h_showMin:true, h_showStartTime:true, h_fontSize:"7",
+  h_range:"all", h_rangeVal:"", h_color:"color",
+  t_pageSize:"A4", t_orient:"portrait", t_columns:3, t_color:"color",
+};
+
+function abrirPrintPanel(mode) {
+  ppMode = mode; ppDia = currentDia; ppPersonaId = null; ppTab = "opciones";
+  renderPrintPanel();
+  document.getElementById("print-panel").style.display = "flex";
+}
+function abrirPrintPanelPersona(pid, dia) {
+  ppMode = "tarjetas"; ppDia = dia; ppPersonaId = pid; ppTab = "opciones";
+  renderPrintPanel();
+  document.getElementById("print-panel").style.display = "flex";
+}
+function closePrintPanel() {
+  document.getElementById("print-panel").style.display = "none";
+}
+
+function renderPrintPanel() {
+  const isH = ppMode === "horario";
+  const persona = ppPersonaId ? personas.find(p => p.id === ppPersonaId) : null;
+  document.getElementById("pp-title").textContent = "Preferencias de impresión — " +
+    (isH ? `Horario ${ppDia}` : persona ? persona.nombre : `Tarjetas ${ppDia}`);
+
+  const navItems = ["Informe de opciones","Diseño de página","General"];
+  const navIds   = ["opciones","diseno","general"];
+  const sidebarHTML = `<ul style="list-style:none;padding:0;margin:0;">` +
+    navItems.map((n,i) => `<li onclick="ppTab='${navIds[i]}';renderPrintPanel()"
+      style="padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;
+      border-left:3px solid ${ppTab===navIds[i]?"var(--gold)":"transparent"};
+      background:${ppTab===navIds[i]?"#fff":"transparent"};
+      color:${ppTab===navIds[i]?"var(--brown)":"#64748b"};"
+      onmouseover="if('${ppTab}'!=='${navIds[i]}')this.style.background='#f1f5f9'"
+      onmouseout="if('${ppTab}'!=='${navIds[i]}')this.style.background='transparent'"
+      >${n}</li>`).join("") + `</ul>`;
+  document.getElementById("pp-sidebar").innerHTML = sidebarHTML;
+
+  let content = "";
+  if (isH) {
+    if (ppTab === "opciones") {
+      content = `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Rango</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="all" ${ppPrefs.h_range==="all"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Todas las líneas</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="custom" ${ppPrefs.h_range==="custom"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Rango de líneas
+            <input type="text" class="inp" style="width:130px;margin-left:6px;" placeholder="ej. 1-5, 8, 11-13" value="${ppPrefs.h_rangeVal}" oninput="ppPrefs.h_rangeVal=this.value" ${ppPrefs.h_range!=="custom"?"disabled":""}>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="assigned" ${ppPrefs.h_range==="assigned"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Solo líneas con personas asignadas</label>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Color</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="color" ${ppPrefs.h_color==="color"?"checked":""} onchange="ppPrefs.h_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A todo color</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="bw" ${ppPrefs.h_color==="bw"?"checked":""} onchange="ppPrefs.h_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Blanco y negro</label>
+        </div>`;
+    } else if (ppTab === "diseno") {
+      content = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Tamaño de página</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="A4" ${ppPrefs.h_pageSize==="A4"?"checked":""} onchange="ppPrefs.h_pageSize=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A4</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="Carta" ${ppPrefs.h_pageSize==="Carta"?"checked":""} onchange="ppPrefs.h_pageSize=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Carta</label>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Orientación</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="portrait" ${ppPrefs.h_orient==="portrait"?"checked":""} onchange="ppPrefs.h_orient=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Vertical</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="landscape" ${ppPrefs.h_orient==="landscape"?"checked":""} onchange="ppPrefs.h_orient=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Horizontal</label>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Ordenar</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="numero" ${ppPrefs.h_order==="numero"?"checked":""} onchange="ppPrefs.h_order=this.value" style="accent-color:var(--gold);"> Por número de línea</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="nombre" ${ppPrefs.h_order==="nombre"?"checked":""} onchange="ppPrefs.h_order=this.value" style="accent-color:var(--gold);"> Por nombre</label>
+          </div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Formato</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_format" value="regular" ${ppPrefs.h_format==="regular"?"checked":""} onchange="ppPrefs.h_format=this.value" style="accent-color:var(--gold);"> Altura regular</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_format" value="media" ${ppPrefs.h_format==="media"?"checked":""} onchange="ppPrefs.h_format=this.value" style="accent-color:var(--gold);"> Altura media</label>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      content = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Marca de minuto de cronología</div>
+          <select class="sel" style="width:160px;margin-bottom:16px;" onchange="ppPrefs.h_markMin=this.value;renderPrintPanel()">
+            ${["5","15","30","45"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} minutos</option>`).join("")}
+          </select>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="checkbox" ${ppPrefs.h_showMin?"checked":""} onchange="ppPrefs.h_showMin=this.checked" style="accent-color:var(--gold);"> Mostrar minutos en cronología</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="checkbox" ${ppPrefs.h_showStartTime?"checked":""} onchange="ppPrefs.h_showStartTime=this.checked" style="accent-color:var(--gold);"> Mostrar hora de inicio</label>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Tamaño de fuente</div>
+          <select class="sel" style="width:100px;" onchange="ppPrefs.h_fontSize=this.value;renderPrintPanel()">
+            ${["6","7","8","9","10","11","12"].map(v=>`<option value="${v}"${ppPrefs.h_fontSize===v?" selected":""}>${v}</option>`).join("")}
+          </select>
+        </div>
+      </div>`;
+    }
+  } else {
+    // Tarjetas
+    if (ppTab === "opciones") {
+      content = `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Exportar</div>
+        <p style="font-size:11px;color:#64748b;margin-bottom:14px;">Formato 9:16 (1080×1920 px) optimizado para móvil, WhatsApp, Telegram e Instagram Stories.</p>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;margin-top:14px;">Color</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="color" ${ppPrefs.t_color==="color"?"checked":""} onchange="ppPrefs.t_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A todo color</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="bw" ${ppPrefs.t_color==="bw"?"checked":""} onchange="ppPrefs.t_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Blanco y negro</label>
+        </div>`;
+    } else if (ppTab === "diseno") {
+      content = `
+        <p style="font-size:12px;color:#64748b;margin-bottom:12px;">Las tarjetas siempre se exportan en 9:16 (1080×1920 px). El PDF usa la orientación seleccionada.</p>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Orientación PDF</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_orient" value="portrait" ${ppPrefs.t_orient==="portrait"?"checked":""} onchange="ppPrefs.t_orient=this.value" style="accent-color:var(--gold);"> Vertical (recomendado)</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_orient" value="landscape" ${ppPrefs.t_orient==="landscape"?"checked":""} onchange="ppPrefs.t_orient=this.value" style="accent-color:var(--gold);"> Horizontal</label>
+        </div>`;
+    } else {
+      content = `<p style="font-size:12px;color:#64748b;padding:8px 0;">Las tarjetas son 9:16 (1080×1920 px). Compatibles con fondos de pantalla, WhatsApp, Telegram e Instagram Stories.</p>`;
+    }
+  }
+  document.getElementById("pp-content").innerHTML = content;
+
+  // Preview
+  const prevPid = ppPersonaId || personas[0]?.id;
+  document.getElementById("pp-preview").innerHTML = `
+    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;">Vista previa</div>
+    ${isH ? buildHorarioPreview() : buildTarjetaPreview(prevPid, ppDia)}
   `;
+
+  // Footer
+  const footerBtns = isH ?
+    `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+     <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportHorarioPDF()">🖨️ Imprimir PDF</button>` :
+    (ppPersonaId ?
+      `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+       <button class="btn btn-gray" onclick="exportTarjetaPNG('${ppPersonaId}','${esc(ppDia)}')">⬇ PNG</button>
+       <button class="btn btn-gray" onclick="exportTarjetaJPG('${ppPersonaId}','${esc(ppDia)}')">⬇ JPG</button>
+       <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportTarjetaPDF('${ppPersonaId}','${esc(ppDia)}')">🖨️ PDF</button>` :
+      `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+       <button class="btn btn-gray" onclick="exportTodasPNG()">⬇ PNG todas</button>
+       <button class="btn btn-gold" onclick="exportTodasZIP()">📦 ZIP · Descarga única</button>
+       <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportTodasPDF()">🖨️ PDF individuales</button>`
+    );
+  document.getElementById("pp-footer").innerHTML = footerBtns;
 }
 
-function baseHTMLLandscape(title, body) {
-  return `<!DOCTYPE html><html lang="es"><head><title>${title}</title>
-  <meta charset="UTF-8">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Arial,sans-serif;padding:20px;font-size:11px}
-    @page{size:A4 landscape;margin:15mm}
-    h1{font-size:15px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:14px}
-    table{border-collapse:collapse;width:100%}
-    th,td{border:1px solid #e2e8f0;padding:6px 8px;font-size:11px}
-    th{background:#f8fafc;font-weight:700}
-    .card{border-radius:8px;overflow:hidden;margin-bottom:12px;page-break-inside:avoid}
-    .card-hdr{padding:10px 12px}
-    @media print{.no-print{display:none}}
-  </style>
-  </head><body>
-  <button class="no-print" onclick="window.print()" style="margin-bottom:12px;padding:7px 18px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700">🖨️ Imprimir / Guardar como PDF</button>
-  <h1>Conferencia JAS 2026 · Brillar con Su Luz</h1>
-  ${body}
-  </body></html>`;
+function buildHorarioPreview() {
+  const dia = ppDia;
+  const bloques = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  const bw = ppPrefs.h_color === "bw";
+  let rows = "";
+  bloques.slice(0,6).forEach(act => {
+    const c = tC(act.tipo);
+    const bg = bw?"#f1f5f9":c.bg; const fg = bw?"#334155":c.fg;
+    const n = (asignaciones[`${dia}|${act.id}`]||[]).length;
+    rows += `<div style="margin-bottom:3px;border-radius:4px;overflow:hidden;font-size:8px;">
+      <div style="background:${bg};color:${fg};padding:2px 6px;font-weight:700;display:flex;justify-content:space-between;">
+        <span>${esc(act.nombre)}</span><span>${esc(act.ini)}</span>
+      </div>
+      ${n?`<div style="background:#fff;padding:2px 6px;font-size:7px;color:#64748b;">${n} asignado${n!==1?"s":""}</div>`:""}
+    </div>`;
+  });
+  if(bloques.length>6) rows+=`<div style="font-size:7px;color:#94a3b8;text-align:center;margin-top:2px;">+ ${bloques.length-6} más…</div>`;
+  return `<div style="width:200px;background:#fff;border-radius:6px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);">
+    <div style="font-weight:700;color:${BRAND.brown};margin-bottom:6px;font-size:10px;">${esc(dia)}</div>${rows}
+  </div>`;
 }
 
+function buildTarjetaPreview(pid, dia) {
+  if (!pid) return `<div style="width:120px;aspect-ratio:9/16;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;">Sin persona</div>`;
+  const p = personas.find(x=>x.id===pid); if(!p) return "";
+  const sm2 = sM(p.sub); const linea = getLineaPersona(pid, dia);
+  const bw = ppPrefs.t_color === "bw";
+  const hBg = bw?"#334155":sm2.color;
+  let asigHTML = "";
+  linea.slice(0,4).forEach(r=>{
+    const c=tC(r.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
+    asigHTML+=`<div style="margin-bottom:3px;border-radius:3px;overflow:hidden;border:1px solid ${bw?"#e2e8f0":c.fg};">
+      <div style="background:${bg};color:${fg};padding:2px 5px;font-size:7px;font-weight:700;display:flex;justify-content:space-between;">
+        <span>${esc(r.nombre)}</span><span style="opacity:.8;">${esc(r.ini)}</span>
+      </div>
+      <div style="background:#fff;padding:1px 5px;font-size:6px;color:#374151;">${r.resp?esc(r.resp.abrev):"—"} · ${esc(r.lugar||"—")}</div>
+    </div>`;
+  });
+  if(linea.length>4) asigHTML+=`<div style="font-size:6px;color:#94a3b8;text-align:center;">+ ${linea.length-4} más</div>`;
+  return `<div style="width:120px;aspect-ratio:9/16;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;flex-direction:column;background:#f1f5f9;flex-shrink:0;">
+    <div style="background:${hBg};padding:7px;flex-shrink:0;">
+      <div style="font-size:6px;color:rgba(255,255,255,.65);letter-spacing:1px;text-transform:uppercase;">JAS 2026</div>
+      <div style="font-size:10px;font-weight:900;color:#fff;line-height:1.1;margin:2px 0;">${esc(p.nombre)}</div>
+      <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:2px;padding:1px 4px;font-size:6px;font-weight:700;">${esc(sm2.abrev)}</span>
+    </div>
+    <div style="background:${bw?"#e2e8f0":sm2.color+"22"};padding:3px 7px;border-bottom:2px solid ${bw?"#334155":sm2.color};flex-shrink:0;">
+      <span style="font-size:9px;font-weight:900;color:${bw?"#334155":sm2.color};">${esc(dia).toUpperCase()}</span>
+    </div>
+    <div style="flex:1;padding:5px 7px;overflow:hidden;">${asigHTML||`<div style="font-size:7px;color:#94a3b8;text-align:center;padding:6px;">Sin asignaciones</div>`}</div>
+    <div style="padding:3px 7px;border-top:1px solid #e2e8f0;flex-shrink:0;text-align:center;"><span style="font-size:5px;color:#94a3b8;">✨ Brillar con Su Luz</span></div>
+  </div>`;
+}
+
+// ── EXPORT HORARIO PDF ────────────────────────────────────────────────────────
+function exportHorarioPDF() {
+  const dia = ppDia;
+  const bw = ppPrefs.h_color === "bw";
+  const fontSize = parseInt(ppPrefs.h_fontSize)||7;
+  const orient = ppPrefs.h_orient;
+  const pageSize = ppPrefs.h_pageSize === "Carta" ? "letter" : "A4";
+  let actos = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  if(ppPrefs.h_range==="assigned") actos=actos.filter(a=>(asignaciones[`${dia}|${a.id}`]||[]).length>0);
+
+  let body = `<p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:14px;">Horario completo — ${esc(dia)}</p>`;
+  actos.forEach(act=>{
+    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
+    const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
+    body+=`<div style="border-radius:8px;overflow:hidden;margin-bottom:14px;border:2px solid ${fg};page-break-inside:avoid;">
+      <div style="background:${bg};color:${fg};padding:10px 14px;display:flex;justify-content:space-between;">
+        <strong style="font-size:${fontSize+4}px;">${esc(act.nombre)}</strong>
+        <span style="font-size:${fontSize+2}px;">${esc(act.ini)} – ${esc(act.fin)}</span>
+      </div>
+      ${asigs.length
+        ?`<table style="border-collapse:collapse;width:100%;">
+            <tr style="background:#f8fafc;">
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">#</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Nombre</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Subcomité</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Responsabilidad</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Lugar</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">Entrada</th>
+              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">Salida</th>
+            </tr>
+            ${asigs.map((a,i)=>{
+              const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);
+              return`<tr><td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">${i+1}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;font-weight:600;">${esc(p2?.nombre||"?")}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(p2?.sub||"?")}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(r2?.nombre||"?")}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(a.lugar||"—")}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;font-weight:700;">${esc(a.ini)}</td>
+                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;font-weight:700;">${esc(a.fin)}</td>
+              </tr>`;
+            }).join("")}
+          </table>`
+        :`<div style="padding:8px 14px;color:#94a3b8;font-size:${fontSize}px;">Sin asignaciones</div>`
+      }
+    </div>`;
+  });
+  // Leyenda
+  body+=`<div style="margin-top:16px;padding-top:12px;border-top:2px solid #e2e8f0;">
+    <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px;">LEYENDA</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    ${actos.map(act=>{const c=tC(act.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
+      return`<div style="background:${bg};border:1px solid ${fg};border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;color:${fg};">${esc(act.abrev)} = ${esc(act.nombre)}</div>`;
+    }).join("")}
+    </div></div>`;
+
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><title>Horario ${dia}</title><meta charset="UTF-8">
+    <style>*{margin:0;padding:0;box-sizing:border-box;}@page{size:${pageSize} ${orient};margin:12mm;}body{font-family:Arial,sans-serif;padding:16px;${bw?"filter:grayscale(1);":""}}@media print{.no-print{display:none;}}</style>
+    </head><body>
+    <button class="no-print" onclick="window.print()" style="margin-bottom:14px;padding:8px 18px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700;">🖨️ Imprimir / Guardar PDF</button>
+    <h1 style="font-size:16px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:16px;">Conferencia JAS 2026 · ${esc(dia)}</h1>
+    ${body}</body></html>`);
+  w.document.close();
+  closePrintPanel();
+}
+
+// ── TARJETA HTML (para PDF en ventana) ───────────────────────────────────────
 function tarjetaPortraitHTML(p, dia) {
   const linea = getLineaPersona(p.id, dia);
   const sm2 = sM(p.sub);
-
-  // Build assignment rows as vertical blocks
+  const bw = ppPrefs.t_color === "bw";
+  const hBg = bw?"#334155":sm2.color; const hText = bw?"#fff":sm2.text;
   let asigBlocks = "";
-  if (!linea.length) {
-    asigBlocks = `<div style="padding:20px;text-align:center;color:#94a3b8;font-size:13px">Sin asignaciones el ${esc(dia)}</div>`;
-  } else {
-    linea.forEach((r, i) => {
-      const c = tC(r.tipo);
-      asigBlocks += `
-      <div style="margin-bottom:10px;border-radius:8px;overflow:hidden;border:1.5px solid ${c.fg};page-break-inside:avoid">
-        <div style="background:${c.bg};color:${c.fg};padding:8px 12px;display:flex;justify-content:space-between;align-items:center">
-          <span style="font-weight:900;font-size:14px">${esc(r.nombre)}</span>
-          <span style="font-size:11px;opacity:.8">${esc(r.ini)} – ${esc(r.fin)}</span>
+  if(!linea.length){
+    asigBlocks=`<div style="padding:30px;text-align:center;color:#94a3b8;font-size:16px;">Sin asignaciones el ${esc(dia)}</div>`;
+  }else{
+    linea.forEach(r=>{
+      const c=tC(r.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
+      asigBlocks+=`<div style="margin-bottom:16px;border-radius:10px;overflow:hidden;border:2px solid ${bw?"#e2e8f0":c.fg};">
+        <div style="background:${bg};color:${fg};padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:900;font-size:18px;">${esc(r.nombre)}</span>
+          <span style="font-size:13px;opacity:.8;">${esc(r.ini)} – ${esc(r.fin)}</span>
         </div>
-        <div style="background:#fff;padding:10px 12px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:#fff;padding:12px 16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:2px">RESPONSABILIDAD</div>
-              <div style="font-size:13px;font-weight:700;color:#1e293b">${r.resp ? `<span style="background:${r.resp.color};color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;margin-right:5px">${esc(r.resp.abrev)}</span>${esc(r.resp.nombre)}` : "—"}</div>
-              ${r.subcat ? `<div style="font-size:10px;color:#64748b;margin-top:2px">${esc(r.subcat)}</div>` : ""}
+              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">RESPONSABILIDAD</div>
+              <div style="font-size:15px;font-weight:700;color:#1e293b;">
+                ${r.resp?`<span style="background:${bw?"#64748b":r.resp.color};color:#fff;border-radius:4px;padding:2px 8px;font-size:11px;margin-right:6px;">${esc(r.resp.abrev)}</span>${esc(r.resp.nombre)}`:"—"}
+              </div>
+              ${r.subcat?`<div style="font-size:12px;color:#64748b;margin-top:3px;">${esc(r.subcat)}</div>`:""}
             </div>
             <div>
-              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:2px">LUGAR</div>
-              <div style="font-size:13px;font-weight:700;color:#1e293b">📍 ${esc(r.lugar || "—")}</div>
+              <div style="font-size:9px;color:#94a3b8;font-weight:700;letter-spacing:.5px;margin-bottom:3px;">LUGAR</div>
+              <div style="font-size:15px;font-weight:700;color:#1e293b;">📍 ${esc(r.lugar||"—")}</div>
             </div>
           </div>
         </div>
       </div>`;
     });
   }
-
+  const orient = ppPrefs.t_orient;
+  const pageSize = ppPrefs.t_pageSize === "Carta" ? "letter" : "A4";
   return `<!DOCTYPE html><html lang="es"><head><title>${esc(p.nombre)} — ${esc(dia)}</title>
   <meta charset="UTF-8">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    @page{size:A4 portrait;margin:12mm}
-    body{font-family:Arial,sans-serif;background:#f1f5f9;padding:0;font-size:12px;color:#1e293b}
-    @media print{.no-print{display:none}body{background:#f1f5f9}}
-  </style></head><body>
-
-  <button class="no-print" onclick="window.print()" style="margin:12px;padding:8px 20px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;display:block">🖨️ Imprimir / Guardar como PDF</button>
-
-  <div style="background:linear-gradient(135deg,${sm2.color} 0%,${sm2.color}cc 100%);padding:20px 20px 16px;margin-bottom:0">
-    <div style="font-size:10px;color:rgba(255,255,255,.7);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">CONFERENCIA JAS 2026</div>
-    <div style="font-size:24px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:4px">${esc(p.nombre)}</div>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:8px">
-      <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:4px;padding:3px 10px;font-size:10px;font-weight:700">${esc(SUB_META[p.sub]?.abrev||p.sub)}</span>
-      <span style="color:rgba(255,255,255,.85);font-size:11px">${esc(p.rol)}</span>
+  <style>*{margin:0;padding:0;box-sizing:border-box;}@page{size:${pageSize} ${orient};margin:10mm;}
+  body{font-family:Arial,sans-serif;background:#f1f5f9;padding:0;font-size:13px;color:#1e293b;}
+  @media print{.no-print{display:none;}body{background:#f1f5f9;}}</style></head><body>
+  <button class="no-print" onclick="window.print()" style="margin:12px;padding:8px 20px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700;font-size:13px;display:block;">🖨️ Imprimir / Guardar PDF</button>
+  <div style="background:linear-gradient(135deg,${hBg} 0%,${hBg}cc 100%);padding:24px 24px 18px;">
+    <div style="font-size:11px;color:rgba(255,255,255,.65);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;">CONFERENCIA JAS 2026</div>
+    <div style="font-size:28px;font-weight:900;color:${hText};line-height:1.1;margin-bottom:4px;">${esc(p.nombre)}</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:8px;">
+      <span style="background:rgba(255,255,255,.2);color:${hText};border-radius:4px;padding:3px 10px;font-size:11px;font-weight:700;">${esc(sm2.abrev)}</span>
+      <span style="color:rgba(255,255,255,.85);font-size:13px;">${esc(p.rol)}</span>
     </div>
   </div>
-
-  <div style="background:${sm2.color}22;padding:8px 20px;border-bottom:3px solid ${sm2.color};margin-bottom:16px">
-    <span style="font-size:18px;font-weight:900;color:${sm2.color};letter-spacing:1px">${esc(dia).toUpperCase()}</span>
-    <span style="font-size:11px;color:#64748b;margin-left:8px">${linea.length} asignación${linea.length!==1?"es":""}</span>
+  <div style="background:${bw?"#f1f5f9":sm2.color+"22"};padding:10px 24px;border-bottom:3px solid ${bw?"#334155":sm2.color};margin-bottom:20px;">
+    <span style="font-size:20px;font-weight:900;color:${bw?"#334155":sm2.color};letter-spacing:1px;">${esc(dia).toUpperCase()}</span>
+    <span style="font-size:13px;color:#64748b;margin-left:10px;">${linea.length} asignación${linea.length!==1?"es":""}</span>
   </div>
-
-  <div style="padding:0 16px 20px">
-    ${asigBlocks}
-  </div>
-
-  <div style="padding:10px 20px;border-top:1px solid #e2e8f0;text-align:center">
-    <span style="font-size:9px;color:#94a3b8;letter-spacing:.5px">✨ Brillar con Su Luz · Conferencia JAS 2026</span>
+  <div style="padding:0 20px 24px;">${asigBlocks}</div>
+  <div style="padding:12px 24px;border-top:1px solid #e2e8f0;text-align:center;">
+    <span style="font-size:10px;color:#94a3b8;">✨ Brillar con Su Luz · Conferencia JAS 2026</span>
   </div>
   </body></html>`;
 }
 
-function imprimirTarjeta(pid, dia) {
-  const p = personas.find(x => x.id === pid);
-  if (!p) return;
-  const w = window.open("", "_blank");
-  w.document.write(tarjetaPortraitHTML(p, dia));
-  w.document.close();
+function exportTarjetaPDF(pid, dia) {
+  const p=personas.find(x=>x.id===pid);if(!p)return;
+  const w=window.open("","_blank");w.document.write(tarjetaPortraitHTML(p,dia));w.document.close();
+  closePrintPanel();
 }
 
-function printHorario() {
-  const dia = imprimirDia;
-  const actos = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const body = `<p style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:12px">Horario completo — ${esc(dia)}</p>` + actos.map(act => {
-    const c = tC(act.tipo); const asigs = (asignaciones[`${dia}|${act.id}`]||[]);
-    return `<div class="card" style="border:2px solid ${c.fg}"><div class="card-hdr" style="background:${c.bg};color:${c.fg}"><strong>${esc(act.nombre)}</strong> · ${esc(act.ini)}–${esc(act.fin)}</div>${asigs.length
-      ? `<table><tr><th>#</th><th>Nombre</th><th>Subcomité</th><th>Responsabilidad</th><th>Lugar</th><th>Entrada</th><th>Salida</th></tr>${asigs.map((a,i)=>{const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);return`<tr><td>${i+1}</td><td>${esc(p2?.nombre||"?")}</td><td>${esc(p2?.sub||"?")}</td><td>${esc(r2?.nombre||"?")}</td><td>${esc(a.lugar||"—")}</td><td>${esc(a.ini)}</td><td>${esc(a.fin)}</td></tr>`;}).join("")}</table>`
-      : `<div style="padding:8px 12px;color:#94a3b8;font-size:10px">Sin asignaciones</div>`
-    }</div>`;
-  }).join("");
-  const w = window.open("", "_blank");
-  w.document.write(baseHTMLLandscape(`Horario ${dia}`, body));
-  w.document.close();
-}
+// ── CANVAS 9:16 (1080×1920) ───────────────────────────────────────────────────
+async function buildCanvas916(p, dia) {
+  const W=1080,H=1920;
+  const canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext("2d");
+  const sm2=sM(p.sub);const linea=getLineaPersona(p.id,dia);
+  const bw=ppPrefs.t_color==="bw";
+  const hBg=bw?"#334155":sm2.color;
 
-async function printTodas() {
-  const dia = imprimirDia;
-  const total = personas.length;
-  // Show progress indicator
-  const prog = document.createElement("div");
-  prog.id = "print-progress";
-  prog.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:2px solid #D9A036;border-radius:12px;padding:28px 36px;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:260px";
-  prog.innerHTML = `<div style="font-size:15px;font-weight:700;color:#8C5626;margin-bottom:8px">Generando PDFs…</div><div id="prog-txt" style="font-size:12px;color:#64748b;margin-bottom:12px">0 / ${total}</div><div style="background:#f1f5f9;border-radius:4px;height:6px;overflow:hidden"><div id="prog-bar" style="background:#D9A036;height:6px;width:0%;transition:width .3s"></div></div><button onclick="document.getElementById('print-progress').remove()" style="margin-top:14px;background:#f1f5f9;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:11px;color:#64748b">Cancelar</button>`;
-  document.body.appendChild(prog);
+  // BG
+  ctx.fillStyle="#f1f5f9";ctx.fillRect(0,0,W,H);
 
-  for (let i = 0; i < personas.length; i++) {
-    if (!document.getElementById("print-progress")) break; // cancelled
-    const p = personas[i];
-    const ptxt = document.getElementById("prog-txt");
-    const pbar = document.getElementById("prog-bar");
-    if (ptxt) ptxt.textContent = `${i+1} / ${total} — ${p.nombre}`;
-    if (pbar) pbar.style.width = `${Math.round((i+1)/total*100)}%`;
-    const w = window.open("", "_blank");
-    if (w) {
-      w.document.write(tarjetaPortraitHTML(p, dia));
-      w.document.close();
+  // Header gradient
+  const grad=ctx.createLinearGradient(0,0,W,340);
+  grad.addColorStop(0,hBg);grad.addColorStop(1,hBg+"bb");
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,340);
+
+  // Conference label
+  ctx.fillStyle="rgba(255,255,255,0.6)";ctx.font="700 28px Arial";
+  ctx.fillText("CONFERENCIA JAS 2026",48,72);
+
+  // Name (with wrap)
+  ctx.fillStyle="#ffffff";ctx.font="900 70px Arial";
+  const wds=p.nombre.split(" ");let ln="";let yn=165;
+  wds.forEach(w2=>{const t=ln?ln+" "+w2:w2;if(ctx.measureText(t).width>W-96&&ln){ctx.fillText(ln,48,yn);ln=w2;yn+=82;}else ln=t;});
+  ctx.fillText(ln,48,yn);
+
+  // Badge row
+  ctx.fillStyle="rgba(255,255,255,0.22)";
+  ctx.beginPath();if(ctx.roundRect)ctx.roundRect(48,yn+18,190,46,8);else{ctx.rect(48,yn+18,190,46);}ctx.fill();
+  ctx.fillStyle="#fff";ctx.font="700 24px Arial";ctx.fillText(sm2.abrev,62,yn+48);
+  ctx.fillStyle="rgba(255,255,255,0.85)";ctx.font="22px Arial";ctx.fillText(p.rol,252,yn+48);
+
+  // Day bar
+  ctx.fillStyle=bw?"#e2e8f0":sm2.color+"22";ctx.fillRect(0,356,W,84);
+  ctx.strokeStyle=bw?"#334155":sm2.color;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(0,440);ctx.lineTo(W,440);ctx.stroke();
+  ctx.fillStyle=bw?"#334155":sm2.color;ctx.font="900 54px Arial";ctx.fillText(dia.toUpperCase(),48,416);
+  ctx.fillStyle="#64748b";ctx.font="28px Arial";
+  ctx.fillText(`${linea.length} asignación${linea.length!==1?"es":""}`,56+ctx.measureText(dia.toUpperCase()).width+20,416);
+
+  // Assignment blocks
+  let ya=468;
+  if(!linea.length){
+    ctx.fillStyle="#94a3b8";ctx.font="32px Arial";ctx.textAlign="center";ctx.fillText("Sin asignaciones",W/2,ya+60);ctx.textAlign="left";
+  }else{
+    for(const r of linea){
+      const c=tC(r.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
+      const bH=200;
+      // block
+      ctx.fillStyle=bg;
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(32,ya,W-64,bH,12);else ctx.rect(32,ya,W-64,bH);ctx.fill();
+      ctx.strokeStyle=fg;ctx.lineWidth=3;
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(32,ya,W-64,bH,12);else ctx.rect(32,ya,W-64,bH);ctx.stroke();
+      // act name + time
+      ctx.fillStyle=fg;ctx.font="900 38px Arial";ctx.fillText(r.nombre,56,ya+54);
+      ctx.font="26px Arial";ctx.textAlign="right";ctx.fillText(`${r.ini}–${r.fin}`,W-56,ya+54);ctx.textAlign="left";
+      // resp
+      if(r.resp){
+        ctx.fillStyle=bw?"#64748b":r.resp.color;
+        ctx.beginPath();if(ctx.roundRect)ctx.roundRect(56,ya+74,154,46,6);else ctx.rect(56,ya+74,154,46);ctx.fill();
+        ctx.fillStyle="#fff";ctx.font="700 23px Arial";ctx.fillText(r.resp.abrev,68,ya+106);
+        ctx.fillStyle="#374151";ctx.font="26px Arial";ctx.fillText(r.resp.nombre,222,ya+106);
+      }
+      ctx.fillStyle="#374151";ctx.font="26px Arial";ctx.fillText(`📍 ${r.lugar||"—"}`,56,ya+154);
+      ya+=bH+18;
+      if(ya>H-120)break;
     }
-    // Small delay so browser doesn't block popups
-    await new Promise(r => setTimeout(r, 400));
   }
-  const el = document.getElementById("print-progress");
-  if (el) {
-    el.querySelector("#prog-txt").textContent = `✅ ${total} ventanas abiertas. Imprime cada una con Ctrl+P.`;
-    el.querySelector("#prog-bar").style.width = "100%";
-    setTimeout(()=>el.remove(), 4000);
-  }
+
+  // Footer
+  ctx.fillStyle="#e2e8f0";ctx.fillRect(0,H-80,W,80);
+  ctx.fillStyle="#94a3b8";ctx.font="24px Arial";ctx.textAlign="center";
+  ctx.fillText("✨ Brillar con Su Luz · Conferencia JAS 2026",W/2,H-26);ctx.textAlign="left";
+
+  return canvas;
 }
 
-// ─── EN VIVO ─────────────────────────────────────────────────────────────────
-function renderVivo() {
-  const dia=vivoDia, horaM=toM(vivoHora);
-  const hoy=horario[dia]||[];
-  const activas=hoy.filter(a=>toM(a.ini)<=horaM&&toM(a.fin)>horaM);
-  const proximas=hoy.filter(a=>toM(a.ini)>horaM&&toM(a.ini)<=horaM+60).sort((a,b)=>toM(a.ini)-toM(b.ini));
-  const asigSet=new Set(); activas.forEach(a=>(asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
-  const libres=personas.filter(p=>!asigSet.has(p.id));
-
-  const dayBtns=DIAS.map(d=>`<option value="${d}"${d===vivoDia?" selected":""}>${d}</option>`).join("");
-
-  // Activas
-  let activasHTML="";
-  if(!activas.length) activasHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Sin actividades a las ${esc(vivoHora)}</div>`;
-  activas.forEach(act=>{
-    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
-    const rows=asigs.map(a=>{
-      const p=personas.find(x=>x.id===a.pid);const r=responsabilidades.find(x=>x.id===a.respId);const sm2=sM(p?.sub);
-      return`<div class="asig-row"><div style="width:7px;height:7px;border-radius:50%;background:${sm2.color}"></div><span style="flex:1;font-size:11px;font-weight:600">${esc(p?.nombre)}</span><span style="font-size:10px;color:#64748b">${esc(r?.abrev)}</span><button onclick="abrirModalAsigVivoEdit('${esc(a.pid)}','${esc(act.id)}')" style="background:transparent;border:1px solid #e2e8f0;border-radius:4px;padding:2px 6px;cursor:pointer;font-size:9px;color:#64748b">✏</button></div>`;
-    }).join("");
-    activasHTML+=`<div class="act-card" style="border:2px solid ${c.fg}">
-      <div class="act-card-hdr" style="background:${c.bg};color:${c.fg}"><strong style="font-size:13px">${esc(act.nombre)} <span style="font-size:10px;opacity:.7">${esc(act.ini)}–${esc(act.fin)}</span></strong><span style="font-size:11px;font-weight:700">${asigs.length} asig.</span></div>
-      <div class="act-card-body">${rows}
-        <button onclick="abrirModalNuevaAsig('${esc(dia)}')" style="width:100%;background:transparent;border:1px dashed #e2e8f0;border-radius:5px;padding:4px;cursor:pointer;font-size:10px;color:#94a3b8;margin-top:4px">+ Asignar persona</button>
-      </div>
-    </div>`;
-  });
-
-  // Próximas
-  let proximasHTML="";
-  if(proximas.length) {
-    proximasHTML=`<h3 style="color:${BRAND.brown};font-size:13px;margin:14px 0 8px">🟡 Próximamente</h3>`;
-    proximas.forEach(act=>{
-      const c=tC(act.tipo);const mins=toM(act.ini)-horaM;
-      proximasHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #e2e8f0;border-radius:7px;margin-bottom:5px">
-        <div style="background:${c.bg};color:${c.fg};border-radius:4px;padding:2px 7px;font-size:9px;font-weight:700">${esc(act.abrev)}</div>
-        <span style="flex:1;font-size:11px;font-weight:600">${esc(act.nombre)}</span>
-        <span style="font-size:10px;color:#f59e0b;font-weight:700">en ${mins} min</span>
-      </div>`;
-    });
-  }
-
-  // Libres
-  let libresHTML="";
-  if(!libres.length) libresHTML=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:20px;text-align:center;color:#94a3b8;font-size:12px">Todo el comité está asignado</div>`;
-  else {
-    libresHTML=`<div class="libres-wrap">`;
-    Object.entries(SUB_META).forEach(([sub,meta])=>{
-      const lg=libres.filter(p=>p.sub===sub);
-      if(!lg.length) return;
-      libresHTML+=`<div class="libre-grp-hdr">— ${meta.abrev} —</div>`;
-      lg.forEach(p=>{
-        libresHTML+=`<div class="libre-person"><div style="width:8px;height:8px;border-radius:50%;background:${meta.color}"></div><span style="flex:1">${esc(p.nombre)}</span>${activas.length?`<button onclick="abrirModalAsig('${p.id}','${esc(activas[0].id)}')" style="background:${BRAND.gold};border:none;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:9px;font-weight:700">Asignar</button>`:""}</div>`;
-      });
-    });
-    libresHTML+=`</div>`;
-  }
-
-  document.getElementById("tab-vivo").innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
-      <div><h2 style="margin:0;color:${BRAND.brown};font-size:16px;font-weight:700">🔴 Operaciones en Vivo</h2><div style="font-size:11px;color:#64748b;margin-top:2px">Vista en tiempo real de la conferencia</div></div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <select class="sel" style="width:auto" onchange="vivoDia=this.value;renderVivo()">${dayBtns}</select>
-        <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px">
-          <span style="font-size:11px;color:#64748b">⏰</span>
-          <input type="time" value="${esc(vivoHora)}" onchange="vivoHora=this.value;renderVivo()" style="border:none;font-size:13px;font-weight:700;color:${BRAND.brown};background:transparent;outline:none">
-        </div>
-        <button class="btn btn-gray btn-sm" onclick="vivoHora=nowStr();renderVivo()">⟳ Ahora</button>
-      </div>
-    </div>
-    <div class="live-stats">
-      ${[
-        {l:"Activas ahora",v:activas.length,c:"#dc2626",bg:"#fee2e2"},
-        {l:"Asignados",v:asigSet.size,c:"#16a34a",bg:"#dcfce7"},
-        {l:"Libres",v:libres.length,c:"#f59e0b",bg:"#fef3c7"},
-        {l:"Total comité",v:personas.length,c:BRAND.brown,bg:"#fef9ec"},
-      ].map(s=>`<div class="live-stat" style="background:${s.bg};border:1px solid ${s.c}33"><div class="live-stat-num" style="color:${s.c}">${s.v}</div><div class="live-stat-lbl">${s.l}</div></div>`).join("")}
-    </div>
-    <div class="live-grid">
-      <div>
-        <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🟢 Ahora (${activas.length})</h3>
-        ${activasHTML}${proximasHTML}
-      </div>
-      <div>
-        <h3 style="color:${BRAND.brown};font-size:13px;margin-bottom:10px">🔵 Libres (${libres.length})</h3>
-        ${libresHTML}
-      </div>
-    </div>
-  `;
+async function exportTarjetaPNG(pid, dia) {
+  const p=personas.find(x=>x.id===pid);if(!p)return;
+  showProgress(`Generando PNG…`,0,1);
+  const canvas=await buildCanvas916(p,dia);
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download=`${String(personas.indexOf(p)+1).padStart(2,"0")}_${slugify(p.nombre)}.png`;a.click();
+    URL.revokeObjectURL(url);hideProgress();
+  },"image/png");
+  closePrintPanel();
 }
 
-function abrirModalAsigVivoEdit(pid, actId) {
-  // Reuse the asig modal but for vivo tab
-  const dia=vivoDia;
-  const act=(horario[dia]||[]).find(a=>a.id===actId);
-  const persona=personas.find(p=>p.id===pid);
-  const ex=(asignaciones[`${dia}|${actId}`]||[]).find(a=>a.pid===pid);
-  const sm2=sM(persona?.sub);
-  const respOpts=responsabilidades.map(r=>`<option value="${r.id}"${ex?.respId===r.id?" selected":""}>${esc(r.nombre)}</option>`).join("");
-  const lugarOpts=lugares.map(l=>`<option value="${esc(l)}"${(ex?.lugar)===l?" selected":""}>${esc(l)}</option>`).join("");
-  openOverlay(`
-    <div style="background:${sm2.color};border-radius:8px;padding:10px 14px;margin-bottom:14px">
-      <div style="color:${sm2.text};font-weight:700;font-size:14px">${esc(persona?.nombre)}</div>
-      <div style="color:${sm2.text};opacity:.8;font-size:11px">${esc(act?.nombre)} · ${esc(dia)}</div>
-    </div>
-    <div class="fld"><label>Responsabilidad</label><select class="sel" id="ma-resp"><option value="">— Seleccionar —</option>${respOpts}</select></div>
-    <div class="fld"><label>Lugar</label><select class="sel" id="ma-lugar">${lugarOpts}</select></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="fld"><label>Entrada</label><input class="inp" type="time" id="ma-ini" value="${ex?.ini||""}"></div>
-      <div class="fld"><label>Salida</label><input class="inp" type="time" id="ma-fin" value="${ex?.fin||""}"></div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
-      <button class="btn btn-gray" onclick="_closeOverlay()">Cancelar</button>
-      <button class="btn btn-red" onclick="_quitarAsig('${esc(dia)}','${esc(actId)}','${esc(pid)}');renderVivo();_closeOverlay()">Quitar</button>
-      <button class="btn btn-gold" onclick="_guardarAsigVivo('${esc(dia)}','${esc(actId)}','${esc(pid)}')">Actualizar</button>
-    </div>
-  `);
+async function exportTarjetaJPG(pid, dia) {
+  const p=personas.find(x=>x.id===pid);if(!p)return;
+  showProgress(`Generando JPG…`,0,1);
+  const canvas=await buildCanvas916(p,dia);
+  canvas.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");
+    a.href=url;a.download=`${String(personas.indexOf(p)+1).padStart(2,"0")}_${slugify(p.nombre)}.jpg`;a.click();
+    URL.revokeObjectURL(url);hideProgress();
+  },"image/jpeg",0.93);
+  closePrintPanel();
 }
-window._guardarAsigVivo=(dia,actId,pid)=>{
-  const respId=document.getElementById("ma-resp").value;
-  if(!respId) return;
-  const lugar=document.getElementById("ma-lugar").value;
-  const ini=document.getElementById("ma-ini").value;
-  const fin=document.getElementById("ma-fin").value;
-  const k=`${dia}|${actId}`;
-  asignaciones[k]=[...(asignaciones[k]||[]).filter(x=>x.pid!==pid),{pid,respId,subcat:"",lugar,ini,fin}];
-  persist(); _closeOverlay(); renderVivo();
-};
+
+async function exportTodasPNG() {
+  closePrintPanel();const dia=ppDia;const total=personas.length;
+  showProgress("Generando imágenes…",0,total);
+  for(let i=0;i<personas.length;i++){
+    if(!document.getElementById("prog-overlay"))break;
+    const p=personas[i];updateProgress(`${i+1}/${total} — ${p.nombre}`,i+1,total);
+    const canvas=await buildCanvas916(p,dia);
+    await new Promise(res=>{canvas.toBlob(blob=>{
+      const url=URL.createObjectURL(blob);const a=document.createElement("a");
+      a.href=url;a.download=`${String(i+1).padStart(2,"0")}_${slugify(p.nombre)}.png`;a.click();
+      URL.revokeObjectURL(url);setTimeout(res,200);
+    },"image/png");});
+  }
+  hideProgress();
+}
+
+async function exportTodasZIP() {
+  closePrintPanel();const dia=ppDia;const total=personas.length;
+  if(typeof JSZip==="undefined"){alert("JSZip no disponible. Comprueba la conexión a internet.");return;}
+  const zip=new JSZip();
+  showProgress("Generando ZIP…",0,total);
+  for(let i=0;i<personas.length;i++){
+    if(!document.getElementById("prog-overlay"))break;
+    const p=personas[i];updateProgress(`${i+1}/${total} — ${p.nombre}`,i+1,total);
+    const canvas=await buildCanvas916(p,dia);
+    const blob=await new Promise(res=>canvas.toBlob(res,"image/png"));
+    const ab=await blob.arrayBuffer();
+    zip.file(`${String(i+1).padStart(2,"0")}_${slugify(p.nombre)}.png`,ab);
+  }
+  updateProgress("Comprimiendo…",total,total);
+  const content=await zip.generateAsync({type:"blob"});
+  const url=URL.createObjectURL(content);const a=document.createElement("a");
+  a.href=url;a.download=`Lineas_${dia}.zip`;a.click();URL.revokeObjectURL(url);
+  hideProgress();
+}
+
+async function exportTodasPDF() {
+  closePrintPanel();const dia=ppDia;const total=personas.length;
+  showProgress("Abriendo PDFs…",0,total);
+  for(let i=0;i<personas.length;i++){
+    if(!document.getElementById("prog-overlay"))break;
+    const p=personas[i];updateProgress(`${i+1}/${total} — ${p.nombre}`,i+1,total);
+    const w=window.open("","_blank");
+    if(w){w.document.write(tarjetaPortraitHTML(p,dia));w.document.close();}
+    await new Promise(r=>setTimeout(r,350));
+  }
+  hideProgress();
+}
+
+// ── PROGRESS ─────────────────────────────────────────────────────────────────
+function showProgress(msg,curr,total){
+  const el=document.createElement("div");el.id="prog-overlay";
+  el.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border:2px solid #D9A036;border-radius:12px;padding:28px 36px;z-index:9999;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:280px;";
+  el.innerHTML=`<div style="font-size:15px;font-weight:700;color:#8C5626;margin-bottom:8px;">Procesando…</div>
+    <div id="prog-txt" style="font-size:12px;color:#64748b;margin-bottom:12px;">${msg}</div>
+    <div style="background:#f1f5f9;border-radius:4px;height:8px;overflow:hidden;">
+      <div id="prog-bar" style="background:#D9A036;height:8px;width:${total?Math.round(curr/total*100):0}%;transition:width .3s;"></div>
+    </div>
+    <button onclick="document.getElementById('prog-overlay')?.remove()" style="margin-top:14px;background:#f1f5f9;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:11px;color:#64748b;">Cancelar</button>`;
+  document.body.appendChild(el);
+}
+function updateProgress(msg,curr,total){
+  const txt=document.getElementById("prog-txt");const bar=document.getElementById("prog-bar");
+  if(txt)txt.textContent=msg;if(bar&&total)bar.style.width=`${Math.round(curr/total*100)}%`;
+}
+function hideProgress(){setTimeout(()=>document.getElementById("prog-overlay")?.remove(),800);}
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 loadData();
-updateHeaderStats();
 renderHorario();
 document.getElementById("day-bar").style.display = "flex";
 </script>
