@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferencia JAS 2026 · Brilla con Su Luz</title>
+<title>Conferencia JAS 2026 · Brillar con Su Luz</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&display=swap');
 
@@ -194,7 +194,7 @@
 <!-- HEADER -->
 <div id="app-header">
   <div style="text-align:center;">
-    <div class="hdr-title">Brillar con Su Luz</div>
+    <div class="hdr-title">Brilla con Su Luz</div>
     <div class="hdr-sub">Conferencia JAS 2026</div>
   </div>
 </div>
@@ -220,19 +220,6 @@
   <div id="tab-comite" class="tab-content"></div>
 </div>
 
-<!-- Side panel -->
-<button id="panel-toggle" onclick="togglePanel()" style="display:none">▶ Panel</button>
-<div id="panel-fab" title="Mostrar panel operativo" onclick="togglePanel()" style="position:fixed;right:16px;bottom:20px;width:48px;height:48px;border-radius:50%;background:var(--brown);border:none;color:#fff;font-size:20px;cursor:pointer;z-index:101;box-shadow:0 4px 14px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">📋</div>
-<div id="side-panel">
-  <div class="panel-hdr">
-    <div><div style="font-size:12px;font-weight:700">Panel Operativo</div><div id="panel-dia-lbl" style="font-size:10px;opacity:.7">Lunes</div></div>
-    <div style="display:flex;gap:6px">
-      <button class="panel-close" onclick="hidePanelFab()" title="Ocultar botón panel">👁</button>
-      <button class="panel-close" onclick="togglePanel()">✕</button>
-    </div>
-  </div>
-  <div class="panel-body" id="panel-body"></div>
-</div>
 
 <!-- PRINT PANEL -->
 <div id="print-panel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;">
@@ -503,11 +490,7 @@ let comiteDiaFiltro = "Lunes";
 
 
 
-let panelOpen = false;
 
-function nowStr() {
-  const d=new Date(); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-}
 
 document.querySelectorAll(".tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
@@ -527,31 +510,8 @@ document.querySelectorAll(".day-btn").forEach(btn => {
     document.querySelectorAll(".day-btn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
     renderHorario();
-    renderPanel();
   });
 });
-
-function togglePanel() {
-  panelOpen = !panelOpen;
-  document.getElementById("side-panel").classList.toggle("open", panelOpen);
-  if(panelOpen) renderPanel();
-}
-function hidePanelFab() {
-  panelOpen = false;
-  document.getElementById("side-panel").classList.remove("open");
-  document.getElementById("panel-fab").style.display = "none";
-  document.getElementById("panel-fab-restore").style.display = "flex";
-}
-// Restore button (bottom-left) shown after hiding
-(function(){
-  const btn = document.createElement("button");
-  btn.id = "panel-fab-restore";
-  btn.title = "Mostrar botón de panel";
-  btn.innerHTML = "📋";
-  btn.style.cssText = "display:none;position:fixed;left:16px;bottom:20px;width:38px;height:38px;border-radius:50%;background:#64748b;border:none;color:#fff;font-size:16px;cursor:pointer;z-index:101;box-shadow:0 3px 10px rgba(0,0,0,.25);align-items:center;justify-content:center;";
-  btn.onclick = () => { document.getElementById("panel-fab").style.display="flex"; btn.style.display="none"; };
-  document.body.appendChild(btn);
-})();
 
 // ─── OVERLAY ─────────────────────────────────────────────────────────────────
 function openOverlay(html) {
@@ -739,7 +699,6 @@ function renderHorario() {
   </div>`;
 
   document.getElementById("tab-horario").innerHTML = html;
-  renderPanel();
 }
 
 function buildRows() {
@@ -757,43 +716,6 @@ function buildRows() {
   // Renumber
   let n=0; rows.forEach(r=>{ if(r.type==="p") r.n=++n; });
   return rows;
-}
-
-// ─── PANEL OPERATIVO ─────────────────────────────────────────────────────────
-function renderPanel() {
-  const dia = currentDia;
-  document.getElementById("panel-dia-lbl").textContent = dia;
-  const acts = horario[dia]||[];
-  const asigSet = new Set();
-  acts.forEach(a=>(asignaciones[`${dia}|${a.id}`]||[]).forEach(x=>asigSet.add(x.pid)));
-  const sinCubrir = acts.filter(a=>!(asignaciones[`${dia}|${a.id}`]||[]).length);
-
-  let html = `<div class="stat-grid">
-    ${[
-      {l:"Asignados",v:asigSet.size,c:"#16a34a"},
-      {l:"Sin asignar",v:personas.length-asigSet.size,c:personas.length-asigSet.size>0?"#dc2626":"#16a34a"},
-      {l:"Actividades",v:acts.length,c:"#1d4ed8"},
-      {l:"Sin cubrir",v:sinCubrir.length,c:sinCubrir.length>0?"#f59e0b":"#16a34a"},
-    ].map(s=>`<div class="stat-card"><div class="stat-num" style="color:${s.c}">${s.v}</div><div class="stat-lbl">${s.l}</div></div>`).join("")}
-  </div>
-  <div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:.5px">SUBCOMITÉS</div>`;
-
-  Object.entries(SUB_META).forEach(([sub,meta])=>{
-    const pers=personas.filter(p=>p.sub===sub);
-    if(!pers.length) return;
-    const asig=pers.filter(p=>asigSet.has(p.id)).length;
-    html+=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-      <div style="width:8px;height:8px;border-radius:50%;background:${meta.color};flex-shrink:0"></div>
-      <div style="flex:1;font-size:10px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.abrev}</div>
-      <div style="font-size:10px;font-weight:700;color:${asig===pers.length?"#16a34a":"#dc2626"}">${asig}/${pers.length}</div>
-    </div>`;
-  });
-
-  if(sinCubrir.length) {
-    html+=`<div style="font-size:10px;font-weight:700;color:#64748b;margin:10px 0 5px;letter-spacing:.5px">SIN CUBRIR</div>`;
-    sinCubrir.forEach(a=>{html+=`<div style="font-size:10px;color:#dc2626;margin-bottom:3px">⚠ ${esc(a.nombre)} · ${esc(a.ini)}</div>`;});
-  }
-  document.getElementById("panel-body").innerHTML = html;
 }
 
 // ─── MODAL ACTIVIDAD ─────────────────────────────────────────────────────────
@@ -1330,6 +1252,7 @@ let ppPrefs = {
   h_markMin:"30", h_showMin:true, h_showStartTime:true, h_fontSize:"7",
   h_range:"all", h_rangeVal:"", h_color:"color",
   t_pageSize:"A4", t_orient:"portrait", t_columns:3, t_color:"color",
+  t_range:"all", t_rangeVal:"",
 };
 
 function abrirPrintPanel(mode) {
@@ -1349,185 +1272,256 @@ function closePrintPanel() {
 function renderPrintPanel() {
   const isH = ppMode === "horario";
   const persona = ppPersonaId ? personas.find(p => p.id === ppPersonaId) : null;
-  document.getElementById("pp-title").textContent = "Preferencias de impresión — " +
-    (isH ? `Horario ${ppDia}` : persona ? persona.nombre : `Tarjetas ${ppDia}`);
+  document.getElementById("pp-title").textContent = isH
+    ? `Horario completo — ${ppDia}`
+    : (persona ? `Tarjeta: ${persona.nombre} · ${ppDia}` : `Tarjetas individuales — ${ppDia}`);
 
-  const navItems = ["Informe de opciones","Diseño de página","General"];
-  const navIds   = ["opciones","diseno","general"];
-  const sidebarHTML = `<ul style="list-style:none;padding:0;margin:0;">` +
+  // ── Sidebar nav ──
+  const navItems = isH
+    ? ["Opciones","Diseño de página","General"]
+    : ["Opciones","Vista previa"];
+  const navIds = isH
+    ? ["opciones","diseno","general"]
+    : ["opciones","preview"];
+  if(!navIds.includes(ppTab)) ppTab = "opciones";
+
+  document.getElementById("pp-sidebar").innerHTML = `<ul style="list-style:none;padding:0;margin:0;">` +
     navItems.map((n,i) => `<li onclick="ppTab='${navIds[i]}';renderPrintPanel()"
       style="padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;
       border-left:3px solid ${ppTab===navIds[i]?"var(--gold)":"transparent"};
       background:${ppTab===navIds[i]?"#fff":"transparent"};
-      color:${ppTab===navIds[i]?"var(--brown)":"#64748b"};"
-      onmouseover="if('${ppTab}'!=='${navIds[i]}')this.style.background='#f1f5f9'"
-      onmouseout="if('${ppTab}'!=='${navIds[i]}')this.style.background='transparent'"
-      >${n}</li>`).join("") + `</ul>`;
-  document.getElementById("pp-sidebar").innerHTML = sidebarHTML;
+      color:${ppTab===navIds[i]?"var(--brown)":"#64748b"};">${n}</li>`).join("") + `</ul>`;
 
+  // ── Content ──
   let content = "";
   if (isH) {
     if (ppTab === "opciones") {
       content = `
-        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Rango</div>
-        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="all" ${ppPrefs.h_range==="all"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Todas las líneas</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="custom" ${ppPrefs.h_range==="custom"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Rango de líneas
-            <input type="text" class="inp" style="width:130px;margin-left:6px;" placeholder="ej. 1-5, 8, 11-13" value="${ppPrefs.h_rangeVal}" oninput="ppPrefs.h_rangeVal=this.value" ${ppPrefs.h_range!=="custom"?"disabled":""}>
-          </label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="assigned" ${ppPrefs.h_range==="assigned"?"checked":""} onchange="ppPrefs.h_range=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Solo líneas con personas asignadas</label>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Color</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:18px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="color" ${ppPrefs.h_color==="color"?"checked":""} onchange="ppPrefs.h_color=this.value;refreshHPreview()" style="accent-color:var(--gold);"> A todo color</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="bw" ${ppPrefs.h_color==="bw"?"checked":""} onchange="ppPrefs.h_color=this.value;refreshHPreview()" style="accent-color:var(--gold);"> Blanco y negro</label>
         </div>
-        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Color</div>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Tamaño de fuente del PDF</div>
+        <select class="sel" style="width:110px;margin-bottom:18px;" onchange="ppPrefs.h_fontSize=this.value">
+          ${["6","7","8","9","10","11","12"].map(v=>`<option value="${v}"${ppPrefs.h_fontSize===v?" selected":""}>${v} pt</option>`).join("")}
+        </select>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Filtro</div>
         <div style="display:flex;flex-direction:column;gap:7px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="color" ${ppPrefs.h_color==="color"?"checked":""} onchange="ppPrefs.h_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A todo color</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_color" value="bw" ${ppPrefs.h_color==="bw"?"checked":""} onchange="ppPrefs.h_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Blanco y negro</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="all" ${ppPrefs.h_range==="all"?"checked":""} onchange="ppPrefs.h_range=this.value;refreshHPreview()" style="accent-color:var(--gold);"> Todas las actividades</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_range" value="assigned" ${ppPrefs.h_range==="assigned"?"checked":""} onchange="ppPrefs.h_range=this.value;refreshHPreview()" style="accent-color:var(--gold);"> Solo con personas asignadas</label>
         </div>`;
     } else if (ppTab === "diseno") {
-      content = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Tamaño de página</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="A4" ${ppPrefs.h_pageSize==="A4"?"checked":""} onchange="ppPrefs.h_pageSize=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A4</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="Carta" ${ppPrefs.h_pageSize==="Carta"?"checked":""} onchange="ppPrefs.h_pageSize=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Carta</label>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Orientación</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="portrait" ${ppPrefs.h_orient==="portrait"?"checked":""} onchange="ppPrefs.h_orient=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Vertical</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="landscape" ${ppPrefs.h_orient==="landscape"?"checked":""} onchange="ppPrefs.h_orient=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Horizontal</label>
-          </div>
+      content = `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Tamaño de página</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="A4" ${ppPrefs.h_pageSize==="A4"?"checked":""} onchange="ppPrefs.h_pageSize=this.value" style="accent-color:var(--gold);"> A4</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_size" value="Carta" ${ppPrefs.h_pageSize==="Carta"?"checked":""} onchange="ppPrefs.h_pageSize=this.value" style="accent-color:var(--gold);"> Carta</label>
         </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Ordenar</div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="numero" ${ppPrefs.h_order==="numero"?"checked":""} onchange="ppPrefs.h_order=this.value" style="accent-color:var(--gold);"> Por número de línea</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="nombre" ${ppPrefs.h_order==="nombre"?"checked":""} onchange="ppPrefs.h_order=this.value" style="accent-color:var(--gold);"> Por nombre</label>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Formato</div>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_format" value="regular" ${ppPrefs.h_format==="regular"?"checked":""} onchange="ppPrefs.h_format=this.value" style="accent-color:var(--gold);"> Altura regular</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_format" value="media" ${ppPrefs.h_format==="media"?"checked":""} onchange="ppPrefs.h_format=this.value" style="accent-color:var(--gold);"> Altura media</label>
-          </div>
-        </div>
-      </div>`;
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Orientación</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="landscape" ${ppPrefs.h_orient==="landscape"?"checked":""} onchange="ppPrefs.h_orient=this.value" style="accent-color:var(--gold);"> Horizontal (recomendado)</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_orient" value="portrait" ${ppPrefs.h_orient==="portrait"?"checked":""} onchange="ppPrefs.h_orient=this.value" style="accent-color:var(--gold);"> Vertical</label>
+        </div>`;
     } else {
-      content = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Marca de minuto de cronología</div>
-          <select class="sel" style="width:160px;margin-bottom:16px;" onchange="ppPrefs.h_markMin=this.value;renderPrintPanel()">
-            ${["5","15","30","45"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} minutos</option>`).join("")}
-          </select>
-          <div style="display:flex;flex-direction:column;gap:6px;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="checkbox" ${ppPrefs.h_showMin?"checked":""} onchange="ppPrefs.h_showMin=this.checked" style="accent-color:var(--gold);"> Mostrar minutos en cronología</label>
-            <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="checkbox" ${ppPrefs.h_showStartTime?"checked":""} onchange="ppPrefs.h_showStartTime=this.checked" style="accent-color:var(--gold);"> Mostrar hora de inicio</label>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Tamaño de fuente</div>
-          <select class="sel" style="width:100px;" onchange="ppPrefs.h_fontSize=this.value;renderPrintPanel()">
-            ${["6","7","8","9","10","11","12"].map(v=>`<option value="${v}"${ppPrefs.h_fontSize===v?" selected":""}>${v}</option>`).join("")}
-          </select>
-        </div>
-      </div>`;
+      // General
+      content = `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Marca de minuto de cronología</div>
+        <p style="font-size:11px;color:#64748b;margin-bottom:8px;">Controla cada cuántos minutos aparece una marca en la cuadrícula.</p>
+        <select class="sel" style="width:160px;margin-bottom:18px;" onchange="ppPrefs.h_markMin=this.value;refreshHPreview()">
+          ${["5","15","30","45"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} minutos</option>`).join("")}
+        </select>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Ordenar personas</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="numero" ${ppPrefs.h_order==="numero"?"checked":""} onchange="ppPrefs.h_order=this.value;refreshHPreview()" style="accent-color:var(--gold);"> Por número de línea</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="h_order" value="nombre" ${ppPrefs.h_order==="nombre"?"checked":""} onchange="ppPrefs.h_order=this.value;refreshHPreview()" style="accent-color:var(--gold);"> Por nombre (A-Z)</label>
+        </div>`;
     }
   } else {
     // Tarjetas
     if (ppTab === "opciones") {
+      const prevPid = ppPersonaId || personas[0]?.id;
+      const prevP = prevPid ? personas.find(x=>x.id===prevPid) : null;
       content = `
-        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Exportar</div>
-        <p style="font-size:11px;color:#64748b;margin-bottom:14px;">Formato 9:16 (1080×1920 px) optimizado para móvil, WhatsApp, Telegram e Instagram Stories.</p>
-        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;margin-top:14px;">Color</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="color" ${ppPrefs.t_color==="color"?"checked":""} onchange="ppPrefs.t_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> A todo color</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="bw" ${ppPrefs.t_color==="bw"?"checked":""} onchange="ppPrefs.t_color=this.value;renderPrintPanel()" style="accent-color:var(--gold);"> Blanco y negro</label>
-        </div>`;
-    } else if (ppTab === "diseno") {
-      content = `
-        <p style="font-size:12px;color:#64748b;margin-bottom:12px;">Las tarjetas siempre se exportan en 9:16 (1080×1920 px). El PDF usa la orientación seleccionada.</p>
-        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Orientación PDF</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_orient" value="portrait" ${ppPrefs.t_orient==="portrait"?"checked":""} onchange="ppPrefs.t_orient=this.value" style="accent-color:var(--gold);"> Vertical (recomendado)</label>
-          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_orient" value="landscape" ${ppPrefs.t_orient==="landscape"?"checked":""} onchange="ppPrefs.t_orient=this.value" style="accent-color:var(--gold);"> Horizontal</label>
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Formato de exportación</div>
+        <p style="font-size:11px;color:#64748b;margin-bottom:14px;">Las tarjetas se exportan en <strong>9:16 · 1080×1920 px</strong>, optimizadas para móvil, WhatsApp, Telegram e Instagram Stories.</p>
+        ${!ppPersonaId ? `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Rango de líneas</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_range" value="all" ${ppPrefs.t_range==="all"?"checked":""} onchange="ppPrefs.t_range=this.value;refreshTPreview()" style="accent-color:var(--gold);"> Todas las personas (${personas.length})</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_range" value="assigned" ${ppPrefs.t_range==="assigned"?"checked":""} onchange="ppPrefs.t_range=this.value;refreshTPreview()" style="accent-color:var(--gold);"> Solo con asignaciones en ${ppDia}</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_range" value="custom" ${ppPrefs.t_range==="custom"?"checked":""} onchange="ppPrefs.t_range=this.value;refreshTPreview()" style="accent-color:var(--gold);"> Rango personalizado
+            <input type="text" class="inp" style="width:130px;margin-left:6px;" placeholder="ej. 1-5, 8, 11-13" value="${ppPrefs.t_rangeVal||""}" oninput="ppPrefs.t_rangeVal=this.value" ${ppPrefs.t_range!=="custom"?"disabled":""}>
+          </label>
+        </div>` : ""}
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Color</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="color" ${ppPrefs.t_color==="color"?"checked":""} onchange="ppPrefs.t_color=this.value;refreshTPreview()" style="accent-color:var(--gold);"> A todo color</label>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer;"><input type="radio" name="t_color" value="bw" ${ppPrefs.t_color==="bw"?"checked":""} onchange="ppPrefs.t_color=this.value;refreshTPreview()" style="accent-color:var(--gold);"> Blanco y negro</label>
         </div>`;
     } else {
-      content = `<p style="font-size:12px;color:#64748b;padding:8px 0;">Las tarjetas son 9:16 (1080×1920 px). Compatibles con fondos de pantalla, WhatsApp, Telegram e Instagram Stories.</p>`;
+      // Vista previa grande en el contenido
+      const prevPid = ppPersonaId || personas[0]?.id;
+      const lista = !ppPersonaId ? getPersonasParaExportar() : [];
+      content = `
+        <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:10px;">Vista previa interactiva</div>
+        ${!ppPersonaId ? `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <label style="font-size:11px;color:#64748b;">Persona:</label>
+          <select class="sel" style="width:220px;" onchange="ppPreviewPid=this.value;refreshTPreview()">
+            ${personas.map(p=>`<option value="${p.id}"${(ppPreviewPid||personas[0]?.id)===p.id?" selected":""}>${esc(p.nombre)}</option>`).join("")}
+          </select>
+          <span style="font-size:11px;color:#64748b;">${lista.length} personas seleccionadas</span>
+        </div>` : ""}
+        <div id="pp-big-preview" style="display:flex;justify-content:center;">${buildTarjetaPreview(ppPersonaId||(ppPreviewPid||personas[0]?.id), ppDia)}</div>`;
     }
   }
   document.getElementById("pp-content").innerHTML = content;
 
-  // Preview
-  const prevPid = ppPersonaId || personas[0]?.id;
-  document.getElementById("pp-preview").innerHTML = `
-    <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;">Vista previa</div>
-    ${isH ? buildHorarioPreview() : buildTarjetaPreview(prevPid, ppDia)}
-  `;
+  // ── Preview panel (derecha) ──
+  if (isH) {
+    document.getElementById("pp-preview").innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">Vista previa</div>
+      <div id="h-preview-wrap">${buildHorarioPreview()}</div>
+      <div style="font-size:9px;color:#94a3b8;text-align:center;margin-top:6px;">El PDF final incluye<br>tabla completa con asignaciones</div>`;
+  } else {
+    const prevPid2 = ppPersonaId || (ppPreviewPid||personas[0]?.id);
+    document.getElementById("pp-preview").innerHTML = `
+      <div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">Vista previa 9:16</div>
+      <div id="t-preview-wrap">${buildTarjetaPreview(prevPid2, ppDia)}</div>
+      <div style="font-size:9px;color:#94a3b8;text-align:center;margin-top:6px;">Exportado a 1080×1920 px</div>`;
+  }
 
-  // Footer
-  const footerBtns = isH ?
-    `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
-     <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportHorarioPDF()">🖨️ Imprimir PDF</button>` :
-    (ppPersonaId ?
-      `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
-       <button class="btn btn-gray" onclick="exportTarjetaPNG('${ppPersonaId}','${esc(ppDia)}')">⬇ PNG</button>
-       <button class="btn btn-gray" onclick="exportTarjetaJPG('${ppPersonaId}','${esc(ppDia)}')">⬇ JPG</button>
-       <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportTarjetaPDF('${ppPersonaId}','${esc(ppDia)}')">🖨️ PDF</button>` :
-      `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
-       <button class="btn btn-gray" onclick="exportTodasPNG()">⬇ PNG todas</button>
-       <button class="btn btn-gold" onclick="exportTodasZIP()">📦 ZIP · Descarga única</button>
-       <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportTodasPDF()">🖨️ PDF individuales</button>`
-    );
-  document.getElementById("pp-footer").innerHTML = footerBtns;
+  // ── Footer buttons ──
+  const footer = isH
+    ? `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+       <button class="btn" style="background:#1e293b;color:#fff;" onclick="exportHorarioPDF()">🖨️ Abrir para imprimir / PDF</button>`
+    : (ppPersonaId
+        ? `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+           <button class="btn btn-gray" onclick="exportTarjetaPNG('${ppPersonaId}','${esc(ppDia)}')">⬇ PNG (9:16)</button>
+           <button class="btn btn-gray" onclick="exportTarjetaJPG('${ppPersonaId}','${esc(ppDia)}')">⬇ JPG (9:16)</button>`
+        : `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
+           <button class="btn btn-gold" onclick="exportTodasZIP()">📦 ZIP completo (PNG + JPG)</button>`
+      );
+  document.getElementById("pp-footer").innerHTML = footer;
+}
+
+// Refresh solo la vista previa del horario sin re-renderizar todo
+function refreshHPreview() {
+  const wrap = document.getElementById("h-preview-wrap");
+  if(wrap) wrap.innerHTML = buildHorarioPreview();
+}
+// Refresh solo la vista previa de tarjetas
+function refreshTPreview() {
+  const prevPid = ppPersonaId || (ppPreviewPid||personas[0]?.id);
+  const wrap = document.getElementById("t-preview-wrap");
+  if(wrap) wrap.innerHTML = buildTarjetaPreview(prevPid, ppDia);
+  const big = document.getElementById("pp-big-preview");
+  if(big) big.innerHTML = buildTarjetaPreview(prevPid, ppDia);
+}
+
+let ppPreviewPid = null;
+
+function getPersonasParaExportar() {
+  if(ppPrefs.t_range === "assigned") return personas.filter(p => getLineaPersona(p.id, ppDia).length > 0);
+  if(ppPrefs.t_range === "custom" && ppPrefs.t_rangeVal) {
+    const nums = new Set();
+    ppPrefs.t_rangeVal.split(",").forEach(part => {
+      const t = part.trim();
+      if(t.includes("-")) { const [a,b]=t.split("-").map(Number); for(let i=a;i<=b;i++) nums.add(i); }
+      else if(t) nums.add(parseInt(t));
+    });
+    return personas.filter((_,i) => nums.has(i+1));
+  }
+  return personas;
 }
 
 function buildHorarioPreview() {
   const dia = ppDia;
-  const bloques = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
   const bw = ppPrefs.h_color === "bw";
+  const markMin = parseInt(ppPrefs.h_markMin) || 30;
+  let actos = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
+  if(ppPrefs.h_range === "assigned") actos = actos.filter(a=>(asignaciones[`${dia}|${a.id}`]||[]).length>0);
+  if(ppPrefs.h_order === "nombre") actos = actos.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre));
+
+  // Cronología mini: muestra franjas de tiempo
+  const SLOT_W = 6; // px por 5 min
+  const START = toM("07:00");
+  const END = toM("03:00");
+  const TOTAL_MIN = END - START;
+
   let rows = "";
-  bloques.slice(0,6).forEach(act => {
+  // Header timeline
+  let timeline = "";
+  for(let m=0; m<=TOTAL_MIN; m+=markMin) {
+    const absM = START + m;
+    const hh = Math.floor(absM/60)%24;
+    const mm = absM%60;
+    const lbl = `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`;
+    const pct = (m/TOTAL_MIN*100).toFixed(1);
+    timeline += `<div style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:5px;color:#94a3b8;top:0;">${lbl}</div>`;
+  }
+  rows += `<div style="position:relative;height:14px;margin-bottom:4px;border-bottom:1px solid #e2e8f0;">${timeline}</div>`;
+
+  actos.slice(0,8).forEach(act => {
     const c = tC(act.tipo);
-    const bg = bw?"#f1f5f9":c.bg; const fg = bw?"#334155":c.fg;
+    const bg = bw?"#94a3b8":c.bg; const fg = bw?"#fff":c.fg;
+    const ini = toM(act.ini); const fin = toM(act.fin);
+    const left = ((ini-START)/TOTAL_MIN*100).toFixed(1);
+    const width = ((fin-ini)/TOTAL_MIN*100).toFixed(1);
     const n = (asignaciones[`${dia}|${act.id}`]||[]).length;
-    rows += `<div style="margin-bottom:3px;border-radius:4px;overflow:hidden;font-size:8px;">
-      <div style="background:${bg};color:${fg};padding:2px 6px;font-weight:700;display:flex;justify-content:space-between;">
-        <span>${esc(act.nombre)}</span><span>${esc(act.ini)}</span>
+    rows += `<div style="margin-bottom:3px;position:relative;height:18px;">
+      <div style="position:absolute;left:${left}%;width:${width}%;height:100%;background:${bg};border-radius:3px;display:flex;align-items:center;padding:0 3px;overflow:hidden;border:1px solid ${fg}33;">
+        <span style="font-size:6px;font-weight:700;color:${fg};white-space:nowrap;">${esc(act.abrev)}${n?` ·${n}`:""}</span>
       </div>
-      ${n?`<div style="background:#fff;padding:2px 6px;font-size:7px;color:#64748b;">${n} asignado${n!==1?"s":""}</div>`:""}
     </div>`;
   });
-  if(bloques.length>6) rows+=`<div style="font-size:7px;color:#94a3b8;text-align:center;margin-top:2px;">+ ${bloques.length-6} más…</div>`;
+  if(actos.length>8) rows+=`<div style="font-size:6px;color:#94a3b8;margin-top:2px;">+ ${actos.length-8} más…</div>`;
+
   return `<div style="width:200px;background:#fff;border-radius:6px;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,.1);">
-    <div style="font-weight:700;color:${BRAND.brown};margin-bottom:6px;font-size:10px;">${esc(dia)}</div>${rows}
+    <div style="font-weight:700;color:${BRAND.brown};margin-bottom:6px;font-size:10px;display:flex;justify-content:space-between;">
+      <span>${esc(dia)}</span><span style="font-size:8px;color:#94a3b8;">marca ${markMin}min</span>
+    </div>
+    ${rows}
+    <div style="font-size:7px;color:#94a3b8;margin-top:4px;text-align:right;">${bw?"⬛ B/N":"🎨 Color"}</div>
   </div>`;
 }
 
 function buildTarjetaPreview(pid, dia) {
-  if (!pid) return `<div style="width:120px;aspect-ratio:9/16;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;">Sin persona</div>`;
+  if (!pid) return `<div style="width:130px;aspect-ratio:9/16;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;">Sin persona</div>`;
   const p = personas.find(x=>x.id===pid); if(!p) return "";
   const sm2 = sM(p.sub); const linea = getLineaPersona(pid, dia);
   const bw = ppPrefs.t_color === "bw";
   const hBg = bw?"#334155":sm2.color;
   let asigHTML = "";
-  linea.slice(0,4).forEach(r=>{
+  linea.slice(0,5).forEach(r=>{
     const c=tC(r.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
-    asigHTML+=`<div style="margin-bottom:3px;border-radius:3px;overflow:hidden;border:1px solid ${bw?"#e2e8f0":c.fg};">
-      <div style="background:${bg};color:${fg};padding:2px 5px;font-size:7px;font-weight:700;display:flex;justify-content:space-between;">
-        <span>${esc(r.nombre)}</span><span style="opacity:.8;">${esc(r.ini)}</span>
+    asigHTML+=`<div style="margin-bottom:4px;border-radius:3px;overflow:hidden;border:1px solid ${bw?"#cbd5e1":c.fg};">
+      <div style="background:${bg};color:${fg};padding:2px 6px;font-size:7.5px;font-weight:700;display:flex;justify-content:space-between;">
+        <span>${esc(r.nombre)}</span><span style="opacity:.75;">${esc(r.ini)}–${esc(r.fin)}</span>
       </div>
-      <div style="background:#fff;padding:1px 5px;font-size:6px;color:#374151;">${r.resp?esc(r.resp.abrev):"—"} · ${esc(r.lugar||"—")}</div>
+      <div style="background:#fff;padding:2px 6px;font-size:6.5px;color:#374151;">
+        ${r.resp?`<span style="background:${bw?"#64748b":r.resp.color};color:#fff;border-radius:2px;padding:0 3px;margin-right:2px;">${esc(r.resp.abrev)}</span>`:""}${r.resp?esc(r.resp.nombre):"—"} · 📍 ${esc(r.lugar||"—")}
+      </div>
     </div>`;
   });
-  if(linea.length>4) asigHTML+=`<div style="font-size:6px;color:#94a3b8;text-align:center;">+ ${linea.length-4} más</div>`;
-  return `<div style="width:120px;aspect-ratio:9/16;border-radius:8px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;flex-direction:column;background:#f1f5f9;flex-shrink:0;">
-    <div style="background:${hBg};padding:7px;flex-shrink:0;">
-      <div style="font-size:6px;color:rgba(255,255,255,.65);letter-spacing:1px;text-transform:uppercase;">JAS 2026</div>
-      <div style="font-size:10px;font-weight:900;color:#fff;line-height:1.1;margin:2px 0;">${esc(p.nombre)}</div>
-      <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:2px;padding:1px 4px;font-size:6px;font-weight:700;">${esc(sm2.abrev)}</span>
+  if(linea.length>5) asigHTML+=`<div style="font-size:6px;color:#94a3b8;text-align:center;margin-top:1px;">+ ${linea.length-5} más</div>`;
+  return `<div style="width:130px;aspect-ratio:9/16;border-radius:10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.2);display:flex;flex-direction:column;background:#f1f5f9;flex-shrink:0;">
+    <div style="background:${hBg};padding:8px;flex-shrink:0;">
+      <div style="font-size:6.5px;color:rgba(255,255,255,.6);letter-spacing:1px;text-transform:uppercase;margin-bottom:1px;">BRILLA CON SU LUZ · JAS 2026</div>
+      <div style="font-size:11px;font-weight:900;color:#fff;line-height:1.15;margin:2px 0;">${esc(p.nombre)}</div>
+      <div style="display:flex;gap:3px;align-items:center;margin-top:3px;">
+        <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:2px;padding:1px 4px;font-size:6px;font-weight:700;">${esc(sm2.abrev)}</span>
+        <span style="color:rgba(255,255,255,.8);font-size:6.5px;">${esc(p.rol)}</span>
+      </div>
     </div>
-    <div style="background:${bw?"#e2e8f0":sm2.color+"22"};padding:3px 7px;border-bottom:2px solid ${bw?"#334155":sm2.color};flex-shrink:0;">
-      <span style="font-size:9px;font-weight:900;color:${bw?"#334155":sm2.color};">${esc(dia).toUpperCase()}</span>
+    <div style="background:${bw?"#e2e8f0":sm2.color+"22"};padding:3px 8px;border-bottom:2px solid ${bw?"#334155":sm2.color};flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:9.5px;font-weight:900;color:${bw?"#334155":sm2.color};">${esc(dia).toUpperCase()}</span>
+      <span style="font-size:6.5px;color:#64748b;">${linea.length} asig.</span>
     </div>
-    <div style="flex:1;padding:5px 7px;overflow:hidden;">${asigHTML||`<div style="font-size:7px;color:#94a3b8;text-align:center;padding:6px;">Sin asignaciones</div>`}</div>
-    <div style="padding:3px 7px;border-top:1px solid #e2e8f0;flex-shrink:0;text-align:center;"><span style="font-size:5px;color:#94a3b8;">✨ Brillar con Su Luz</span></div>
+    <div style="flex:1;padding:5px 8px;overflow:hidden;">${asigHTML||`<div style="font-size:7px;color:#94a3b8;text-align:center;padding:8px;">Sin asignaciones</div>`}</div>
+    <div style="padding:3px 8px;border-top:1px solid #e2e8f0;flex-shrink:0;text-align:center;">
+      <span style="font-size:5.5px;color:#94a3b8;">✨ Brilla con Su Luz · Conferencia JAS 2026</span>
+    </div>
   </div>`;
 }
 
@@ -1783,22 +1777,50 @@ async function exportTodasPNG() {
 }
 
 async function exportTodasZIP() {
-  closePrintPanel();const dia=ppDia;const total=personas.length;
-  if(typeof JSZip==="undefined"){alert("JSZip no disponible. Comprueba la conexión a internet.");return;}
-  const zip=new JSZip();
-  showProgress("Generando ZIP…",0,total);
-  for(let i=0;i<personas.length;i++){
-    if(!document.getElementById("prog-overlay"))break;
-    const p=personas[i];updateProgress(`${i+1}/${total} — ${p.nombre}`,i+1,total);
-    const canvas=await buildCanvas916(p,dia);
-    const blob=await new Promise(res=>canvas.toBlob(res,"image/png"));
-    const ab=await blob.arrayBuffer();
-    zip.file(`${String(i+1).padStart(2,"0")}_${slugify(p.nombre)}.png`,ab);
+  closePrintPanel();
+  const dia = ppDia;
+  const lista = getPersonasParaExportar();
+  const total = lista.length;
+  if(typeof JSZip === "undefined") { alert("JSZip no disponible. Comprueba la conexión a internet."); return; }
+  showProgress("Generando ZIP — PNG + JPG…", 0, total * 2);
+  const zip = new JSZip();
+  const carpetaPNG = zip.folder("PNG");
+  const carpetaJPG = zip.folder("JPG");
+
+  for(let i = 0; i < lista.length; i++) {
+    if(!document.getElementById("prog-overlay")) break;
+    const p = lista[i];
+    const num = String(i + 1).padStart(2, "0");
+    const nombre = slugify(p.nombre);
+
+    updateProgress(`PNG ${i+1}/${total} — ${p.nombre}`, i, total * 2);
+
+    // Generar canvas fresco para PNG
+    const cvsPNG = await buildCanvas916(p, dia);
+    const blobPNG = await new Promise(res => cvsPNG.toBlob(res, "image/png"));
+    carpetaPNG.file(`${num}_${nombre}.png`, await blobPNG.arrayBuffer());
+    // liberar referencia
+    cvsPNG.width = 0; cvsPNG.height = 0;
+
+    updateProgress(`JPG ${i+1}/${total} — ${p.nombre}`, total + i, total * 2);
+
+    // Canvas fresco para JPG
+    const cvsJPG = await buildCanvas916(p, dia);
+    const blobJPG = await new Promise(res => cvsJPG.toBlob(res, "image/jpeg", 0.93));
+    carpetaJPG.file(`${num}_${nombre}.jpg`, await blobJPG.arrayBuffer());
+    cvsJPG.width = 0; cvsJPG.height = 0;
+
+    // Pequeña pausa para liberar memoria entre iteraciones
+    await new Promise(r => setTimeout(r, 30));
   }
-  updateProgress("Comprimiendo…",total,total);
-  const content=await zip.generateAsync({type:"blob"});
-  const url=URL.createObjectURL(content);const a=document.createElement("a");
-  a.href=url;a.download=`Lineas_${dia}.zip`;a.click();URL.revokeObjectURL(url);
+
+  if(!document.getElementById("prog-overlay")) return;
+  updateProgress("Comprimiendo ZIP…", total * 2, total * 2);
+  const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement("a");
+  a.href = url; a.download = `Brilla_${dia}.zip`; a.click();
+  URL.revokeObjectURL(url);
   hideProgress();
 }
 
