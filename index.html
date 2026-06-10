@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Conferencia JAS 2026 · Brillar con Su Luz</title>
+<title>Conferencia JAS 2026 · Brilla con Su Luz</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,900;1,9..40,400&display=swap');
 
@@ -406,8 +406,10 @@ let responsabilidades = [
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const uid = () => Math.random().toString(36).slice(2,8);
 const toM = s => { if(!s) return 0; const[h,m]=s.split(":").map(Number); return (h<7?h+24:h)*60+(m||0); };
-const DAY_START=toM("07:00"), DAY_END=toM("03:00"), SLOT=30;
-const TOTAL_SLOTS=(DAY_END-DAY_START)/SLOT;
+const DAY_START=toM("07:00"), DAY_END=toM("03:00");
+const BASE_SLOT=30; // default, overridden by ppPrefs.h_markMin
+let SLOT=BASE_SLOT;
+let TOTAL_SLOTS=(DAY_END-DAY_START)/SLOT;
 const slotOf = m => Math.max(0,Math.min(Math.floor((m-DAY_START)/SLOT),TOTAL_SLOTS));
 const sM = s => SUB_META[s]||{color:"#888",text:"#fff",abrev:"?"};
 const tC = t => TC[t]||TC.general;
@@ -537,13 +539,20 @@ function render() {
 // ─── HORARIO / GRID TIS ──────────────────────────────────────────────────────
 function renderHorario() {
   const dia = currentDia;
+
+  // §7.7 — Dynamic granularity: recompute SLOT and TOTAL_SLOTS from ppPrefs
+  SLOT = parseInt(ppPrefs.h_markMin) || 30;
+  TOTAL_SLOTS = Math.round((DAY_END - DAY_START) / SLOT);
+
   const bloques = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
   const bkM = bkMetaOf(bloques);
   const tracks = computeTracks(bloques);
   const bps = getBreakpoints(bkM);
   const slots = hourLabels();
 
-  const CELL_W=44, COL_N=32, COL_NAME=150;
+  // Cell width scales with granularity: narrower slot = wider cell so content fits
+  const CELL_W = SLOT <= 5 ? 20 : SLOT <= 15 ? 30 : SLOT <= 30 ? 44 : 60;
+  const COL_N=32, COL_NAME=150;
 
   let html = `
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
@@ -552,9 +561,15 @@ function renderHorario() {
       <div style="font-size:10px;color:#94a3b8;margin-top:1px">${bloques.length} actividades · ${personas.length} personas${tracks.length>1?` · ${tracks.length} actividades paralelas`:""} · clic para asignar</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <div style="display:flex;align-items:center;gap:5px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:4px 10px;">
+        <span style="font-size:10px;color:#64748b;font-weight:600;">⏱</span>
+        <select onchange="ppPrefs.h_markMin=this.value;renderHorario()" style="border:none;background:transparent;font-size:11px;font-weight:600;color:${BRAND.brown};cursor:pointer;outline:none;">
+          ${["5","10","15","30","60"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} min</option>`).join("")}
+        </select>
+      </div>
       <button class="btn btn-gold" onclick="abrirModalNuevaAct()">+ Nueva actividad</button>
-      <button class="btn btn-gray" onclick="exportarJSON()">⬇ Exportar datos</button>
       <div style="position:relative;display:inline-block;" id="dd-wrap">
+
         <button class="btn" style="background:#1e293b;color:#fff;" onclick="toggleDDImprimir()">🖨️ Impresión ▾</button>
         <div id="dd-imprimir" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.12);min-width:210px;z-index:500;overflow:hidden;">
           <button onclick="abrirPrintPanel('horario')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">📋 Horario completo del día</button>
@@ -696,6 +711,9 @@ function renderHorario() {
         </div>`;
       }).join("")}
     </div>
+  </div>
+  <div style="margin-top:10px;display:flex;justify-content:flex-end;padding:0 2px;">
+    <button class="btn btn-gray" onclick="exportarJSON()" style="font-size:11px;">⬇ Exportar datos (JSON)</button>
   </div>`;
 
   document.getElementById("tab-horario").innerHTML = html;
@@ -1235,10 +1253,18 @@ function toggleDDImprimir() {
   const dd = document.getElementById("dd-imprimir");
   dd.style.display = dd.style.display === "none" ? "block" : "none";
 }
+function toggleZIPMenu() {
+  const m = document.getElementById("zip-menu");
+  if(m) m.style.display = m.style.display === "none" ? "block" : "none";
+}
 document.addEventListener("click", e => {
   if (!e.target.closest("#dd-wrap")) {
     const dd = document.getElementById("dd-imprimir");
     if (dd) dd.style.display = "none";
+  }
+  if (!e.target.closest("#zip-wrap")) {
+    const zm = document.getElementById("zip-menu");
+    if (zm) zm.style.display = "none";
   }
 });
 
@@ -1329,7 +1355,7 @@ function renderPrintPanel() {
         <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Marca de minuto de cronología</div>
         <p style="font-size:11px;color:#64748b;margin-bottom:8px;">Controla cada cuántos minutos aparece una marca en la cuadrícula.</p>
         <select class="sel" style="width:160px;margin-bottom:18px;" onchange="ppPrefs.h_markMin=this.value;refreshHPreview()">
-          ${["5","15","30","45"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} minutos</option>`).join("")}
+          ${["5","10","15","30","60"].map(v=>`<option value="${v}"${ppPrefs.h_markMin===v?" selected":""}>${v} minutos</option>`).join("")}
         </select>
         <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;">Ordenar personas</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1400,7 +1426,16 @@ function renderPrintPanel() {
            <button class="btn btn-gray" onclick="exportTarjetaPNG('${ppPersonaId}','${esc(ppDia)}')">⬇ PNG (9:16)</button>
            <button class="btn btn-gray" onclick="exportTarjetaJPG('${ppPersonaId}','${esc(ppDia)}')">⬇ JPG (9:16)</button>`
         : `<button class="btn btn-gray" onclick="closePrintPanel()">Cancelar</button>
-           <button class="btn btn-gold" onclick="exportTodasZIP()">📦 ZIP completo (PNG + JPG)</button>`
+           <div style="position:relative;display:inline-block;" id="zip-wrap">
+             <button class="btn btn-gold" onclick="toggleZIPMenu()">📦 Descargar ZIP ▾</button>
+             <div id="zip-menu" style="display:none;position:absolute;right:0;bottom:calc(100% + 4px);background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.14);min-width:185px;z-index:600;overflow:hidden;">
+               <button onclick="exportTodasZIP('png')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">🖼️ ZIP en PNG (9:16)</button>
+               <hr style="border:none;border-top:1px solid #f1f5f9;margin:2px 0;">
+               <button onclick="exportTodasZIP('jpg')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">🖼️ ZIP en JPG (9:16)</button>
+               <hr style="border:none;border-top:1px solid #f1f5f9;margin:2px 0;">
+               <button onclick="exportTodasZIP('pdf')" style="display:block;width:100%;background:transparent;border:none;padding:10px 16px;text-align:left;font-size:12px;font-weight:600;color:#1e293b;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">📄 ZIP en PDF (A4)</button>
+             </div>
+           </div>`
       );
   document.getElementById("pp-footer").innerHTML = footer;
 }
@@ -1529,64 +1564,167 @@ function buildTarjetaPreview(pid, dia) {
 function exportHorarioPDF() {
   const dia = ppDia;
   const bw = ppPrefs.h_color === "bw";
-  const fontSize = parseInt(ppPrefs.h_fontSize)||7;
   const orient = ppPrefs.h_orient;
   const pageSize = ppPrefs.h_pageSize === "Carta" ? "letter" : "A4";
-  let actos = (horario[dia]||[]).slice().sort((a,b)=>toM(a.ini)-toM(b.ini));
-  if(ppPrefs.h_range==="assigned") actos=actos.filter(a=>(asignaciones[`${dia}|${a.id}`]||[]).length>0);
+  const markMin = parseInt(ppPrefs.h_markMin) || 30;
 
-  let body = `<p style="font-size:14px;font-weight:700;color:#64748b;margin-bottom:14px;">Horario completo — ${esc(dia)}</p>`;
-  actos.forEach(act=>{
-    const c=tC(act.tipo);const asigs=(asignaciones[`${dia}|${act.id}`]||[]);
-    const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
-    body+=`<div style="border-radius:8px;overflow:hidden;margin-bottom:14px;border:2px solid ${fg};page-break-inside:avoid;">
-      <div style="background:${bg};color:${fg};padding:10px 14px;display:flex;justify-content:space-between;">
-        <strong style="font-size:${fontSize+4}px;">${esc(act.nombre)}</strong>
-        <span style="font-size:${fontSize+2}px;">${esc(act.ini)} – ${esc(act.fin)}</span>
-      </div>
-      ${asigs.length
-        ?`<table style="border-collapse:collapse;width:100%;">
-            <tr style="background:#f8fafc;">
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">#</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Nombre</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Subcomité</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Responsabilidad</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:left;">Lugar</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">Entrada</th>
-              <th style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">Salida</th>
-            </tr>
-            ${asigs.map((a,i)=>{
-              const p2=personas.find(x=>x.id===a.pid);const r2=responsabilidades.find(x=>x.id===a.respId);
-              return`<tr><td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;">${i+1}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;font-weight:600;">${esc(p2?.nombre||"?")}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(p2?.sub||"?")}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(r2?.nombre||"?")}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;">${esc(a.lugar||"—")}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;font-weight:700;">${esc(a.ini)}</td>
-                <td style="padding:5px 8px;font-size:${fontSize}px;border:1px solid #e2e8f0;text-align:center;font-weight:700;">${esc(a.fin)}</td>
-              </tr>`;
-            }).join("")}
-          </table>`
-        :`<div style="padding:8px 14px;color:#94a3b8;font-size:${fontSize}px;">Sin asignaciones</div>`
+  // Build ordered person list grouped by subcommittee
+  const rows = buildRows().filter(r => r.type === "p").map(r => r.p);
+
+  // All activities sorted by time
+  let actos = (horario[dia]||[]).slice().sort((a,b) => toM(a.ini) - toM(b.ini));
+
+  // Time range: earliest start to latest end
+  const allTimes = actos.flatMap(a => [toM(a.ini), toM(a.fin)]);
+  const gridStart = allTimes.length ? Math.min(...allTimes) : toM("07:00");
+  const gridEnd   = allTimes.length ? Math.max(...allTimes) : toM("23:00");
+  const totalMin  = gridEnd - gridStart;
+
+  // Build time column headers at markMin intervals
+  const timeHeaders = [];
+  for(let m = 0; m <= totalMin; m += markMin) {
+    const abs = gridStart + m;
+    const hh  = Math.floor(abs / 60) % 24;
+    const mm  = abs % 60;
+    timeHeaders.push({ label: `${String(hh).padStart(2,"0")}:${String(mm).padStart(2,"0")}`, m });
+  }
+
+  // CSS color helper (bw strips color)
+  const cellBg  = tipo => bw ? "#f1f5f9" : tC(tipo).bg;
+  const cellFg  = tipo => bw ? "#334155" : tC(tipo).fg;
+
+  // For each person × time slot, find which activity they are assigned to
+  function getAssignmentAt(pid, tMin) {
+    for(const act of actos) {
+      const ini = toM(act.ini), fin = toM(act.fin);
+      if(tMin >= ini && tMin < fin) {
+        const asig = (asignaciones[`${dia}|${act.id}`]||[]).find(a => a.pid === pid);
+        if(asig) {
+          const resp = responsabilidades.find(r => r.id === asig.respId);
+          return { act, resp, asig };
+        }
       }
-    </div>`;
-  });
-  // Leyenda
-  body+=`<div style="margin-top:16px;padding-top:12px;border-top:2px solid #e2e8f0;">
-    <div style="font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px;">LEYENDA</div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;">
-    ${actos.map(act=>{const c=tC(act.tipo);const bg=bw?"#f1f5f9":c.bg;const fg=bw?"#334155":c.fg;
-      return`<div style="background:${bg};border:1px solid ${fg};border-radius:4px;padding:3px 10px;font-size:9px;font-weight:700;color:${fg};">${esc(act.abrev)} = ${esc(act.nombre)}</div>`;
-    }).join("")}
-    </div></div>`;
+    }
+    return null;
+  }
 
-  const w=window.open("","_blank");
-  w.document.write(`<!DOCTYPE html><html lang="es"><head><title>Horario ${dia}</title><meta charset="UTF-8">
-    <style>*{margin:0;padding:0;box-sizing:border-box;}@page{size:${pageSize} ${orient};margin:12mm;}body{font-family:Arial,sans-serif;padding:16px;${bw?"filter:grayscale(1);":""}}@media print{.no-print{display:none;}}</style>
-    </head><body>
-    <button class="no-print" onclick="window.print()" style="margin-bottom:14px;padding:8px 18px;background:#D9A036;border:none;border-radius:6px;cursor:pointer;font-weight:700;">🖨️ Imprimir / Guardar PDF</button>
-    <h1 style="font-size:16px;color:#8C5626;border-bottom:3px solid #D9A036;padding-bottom:8px;margin-bottom:16px;">Conferencia JAS 2026 · ${esc(dia)}</h1>
-    ${body}</body></html>`);
+  // Build colspan-merged cells for each person row
+  function buildPersonCells(pid) {
+    const cells = [];
+    let i = 0;
+    while(i < timeHeaders.length - 1) {
+      const tMin = gridStart + timeHeaders[i].m;
+      const hit  = getAssignmentAt(pid, tMin);
+      if(!hit) { cells.push({ span: 1, hit: null, tMin }); i++; continue; }
+      // Merge consecutive slots with same activity+resp
+      let span = 1;
+      while(i + span < timeHeaders.length - 1) {
+        const nextMin = gridStart + timeHeaders[i + span].m;
+        const nextHit = getAssignmentAt(pid, nextMin);
+        if(nextHit && nextHit.act.id === hit.act.id && nextHit.resp?.id === hit.resp?.id) span++;
+        else break;
+      }
+      cells.push({ span, hit, tMin });
+      i += span;
+    }
+    return cells;
+  }
+
+  // Group rows by subcommittee for section headers
+  const grouped = [];
+  let lastSub = null;
+  rows.forEach((p, idx) => {
+    if(p.sub !== lastSub) {
+      grouped.push({ type: "grp", label: `- ${(SUB_META[p.sub]?.abrev || p.sub).toUpperCase()} -` });
+      lastSub = p.sub;
+    }
+    grouped.push({ type: "p", p, n: idx + 1 });
+  });
+
+  // Time header row HTML
+  const thCols = timeHeaders.map((th, i) => {
+    if(i === timeHeaders.length - 1) return ""; // last is end marker only
+    return `<th style="border:1px solid #cbd5e1;padding:2px 1px;font-size:6px;font-weight:700;text-align:center;background:#e0f2fe;color:#1e3a8a;min-width:28px;white-space:nowrap;">${th.label}<br><span style="font-size:5px;font-weight:400;color:#94a3b8;">|${markMin}m</span></th>`;
+  }).join("");
+
+  // Person rows HTML
+  let tbodyHTML = "";
+  grouped.forEach(row => {
+    if(row.type === "grp") {
+      const colSpan = timeHeaders.length + 1; // #, Nombre + time cols
+      tbodyHTML += `<tr><td colspan="${colSpan}" style="background:#f1f5f9;padding:3px 8px;font-size:7px;font-weight:700;color:#64748b;text-align:center;border:1px solid #e2e8f0;letter-spacing:0.5px;">${row.label}</td></tr>`;
+      return;
+    }
+    const { p, n } = row;
+    const sm2 = sM(p.sub);
+    const cells = buildPersonCells(p.id);
+    let cellsHTML = cells.map(({ span, hit, tMin }) => {
+      if(!hit) return `<td colspan="${span}" style="border:1px solid #f1f5f9;background:#fff;"></td>`;
+      const bg = bw ? "#f1f5f9" : tC(hit.act.tipo).bg;
+      const fg = bw ? "#334155" : tC(hit.act.tipo).fg;
+      const label = hit.resp?.abrev || hit.act.abrev;
+      return `<td colspan="${span}" style="border:1px solid #cbd5e1;background:${bg};text-align:center;padding:1px 2px;">
+        <span style="font-size:6.5px;font-weight:900;color:${fg};line-height:1;">${esc(label)}</span>
+      </td>`;
+    }).join("");
+    const dotColor = bw ? "#64748b" : sm2.color;
+    tbodyHTML += `<tr style="background:${n%2===0?"#fafafa":"#fff"};">
+      <td style="border:1px solid #e2e8f0;text-align:center;font-size:7px;font-weight:700;color:#94a3b8;padding:2px;">${n}</td>
+      <td style="border:1px solid #e2e8f0;padding:2px 5px;white-space:nowrap;">
+        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:${dotColor};margin-right:3px;vertical-align:middle;"></span>
+        <span style="font-size:7px;font-weight:600;color:#1e293b;">${esc(p.nombre)}</span>
+        <div style="font-size:5.5px;color:#94a3b8;margin-top:1px;">${esc(p.rol)}</div>
+      </td>
+      ${cellsHTML}
+    </tr>`;
+  });
+
+  // Legend
+  const usedTypes = [...new Set(actos.map(a => a.tipo))];
+  const legendHTML = `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
+    <span style="font-size:7px;font-weight:700;color:#64748b;margin-right:4px;">LEYENDA:</span>
+    ${actos.map(act => {
+      const bg = bw?"#f1f5f9":tC(act.tipo).bg; const fg = bw?"#334155":tC(act.tipo).fg;
+      return `<span style="background:${bg};border:1px solid ${fg};border-radius:3px;padding:1px 6px;font-size:6.5px;font-weight:700;color:${fg};">${esc(act.abrev)} = ${esc(act.nombre)} ${esc(act.ini)}–${esc(act.fin)}</span>`;
+    }).join("")}
+  </div>`;
+
+  // Institutional signature (§6.3)
+  const firma = `<div style="margin-top:14px;padding-top:8px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <div style="font-size:6.5px;color:#64748b;">La Iglesia de Jesucristo de los Santos de los Últimos Días</div>
+      <div style="font-size:6px;color:#94a3b8;">© 2026 por Intellectual Reserve, Inc. Todos los derechos reservados. Confidencial (solamente para uso interno)</div>
+    </div>
+    <div style="font-size:6px;color:#94a3b8;">${new Date().toISOString().slice(0,16).replace("T"," ")} impresa, página 1 de 1</div>
+  </div>`;
+
+  const w = window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html lang="es"><head><title>Horario TIS — ${dia}</title><meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    @page{size:${pageSize} ${orient};margin:8mm;}
+    body{font-family:Arial,sans-serif;font-size:7px;${bw?"filter:grayscale(1);":""}padding:8px;}
+    table{border-collapse:collapse;width:100%;}
+    @media print{.no-print{display:none;}}
+  </style></head><body>
+  <button class="no-print" onclick="window.print()" style="margin-bottom:10px;padding:6px 16px;background:#D9A036;border:none;border-radius:5px;cursor:pointer;font-weight:700;font-size:11px;">🖨️ Imprimir / Guardar PDF</button>
+  <div style="margin-bottom:6px;">
+    <div style="font-size:11px;font-weight:700;color:#8C5626;">Conferencia JAS 2026 · ${esc(dia)}</div>
+    <div style="font-size:8px;color:#64748b;">${esc(dia)} · ${rows.length} personas · ${actos.length} actividades</div>
+  </div>
+  <table>
+    <thead>
+      <tr style="background:#f8fafc;">
+        <th style="border:1px solid #e2e8f0;padding:2px 4px;font-size:7px;text-align:center;background:#f1f5f9;min-width:18px;">#</th>
+        <th style="border:1px solid #e2e8f0;padding:2px 6px;font-size:7px;text-align:left;background:#f1f5f9;min-width:90px;">Nombre</th>
+        ${thCols}
+      </tr>
+    </thead>
+    <tbody>${tbodyHTML}</tbody>
+  </table>
+  ${legendHTML}
+  ${firma}
+  </body></html>`);
   w.document.close();
   closePrintPanel();
 }
@@ -1647,8 +1785,12 @@ function tarjetaPortraitHTML(p, dia) {
     <span style="font-size:13px;color:#64748b;margin-left:10px;">${linea.length} asignación${linea.length!==1?"es":""}</span>
   </div>
   <div style="padding:0 20px 24px;">${asigBlocks}</div>
-  <div style="padding:12px 24px;border-top:1px solid #e2e8f0;text-align:center;">
-    <span style="font-size:10px;color:#94a3b8;">✨ Brillar con Su Luz · Conferencia JAS 2026</span>
+  <div style="padding:10px 24px;border-top:1px solid #e2e8f0;text-align:center;">
+    <span style="font-size:10px;color:#94a3b8;">✨ Brilla con Su Luz · Conferencia JAS 2026</span>
+  </div>
+  <div style="padding:8px 24px 10px;background:#f8fafc;border-top:1px solid #f1f5f9;">
+    <div style="font-size:8px;color:#94a3b8;">La Iglesia de Jesucristo de los Santos de los Últimos Días</div>
+    <div style="font-size:7px;color:#cbd5e1;">© 2026 por Intellectual Reserve, Inc. Todos los derechos reservados. Confidencial (solamente para uso interno)</div>
   </div>
   </body></html>`;
 }
@@ -1731,7 +1873,7 @@ async function buildCanvas916(p, dia) {
   // Footer
   ctx.fillStyle="#e2e8f0";ctx.fillRect(0,H-80,W,80);
   ctx.fillStyle="#94a3b8";ctx.font="24px Arial";ctx.textAlign="center";
-  ctx.fillText("✨ Brillar con Su Luz · Conferencia JAS 2026",W/2,H-26);ctx.textAlign="left";
+  ctx.fillText("✨ Brilla con Su Luz · Conferencia JAS 2026",W/2,H-26);ctx.textAlign="left";
 
   return canvas;
 }
@@ -1776,50 +1918,68 @@ async function exportTodasPNG() {
   hideProgress();
 }
 
-async function exportTodasZIP() {
+async function exportTodasZIP(fmt) {
+  // fmt: 'png' | 'jpg' | 'pdf'
+  const format = fmt || 'png';
   closePrintPanel();
   const dia = ppDia;
   const lista = getPersonasParaExportar();
   const total = lista.length;
   if(typeof JSZip === "undefined") { alert("JSZip no disponible. Comprueba la conexión a internet."); return; }
-  showProgress("Generando ZIP — PNG + JPG…", 0, total * 2);
+
+  if(format === 'pdf') {
+    // PDF ZIP: generate individual PDF HTML blobs
+    const zip = new JSZip();
+    showProgress("Generando ZIP PDF…", 0, total);
+    for(let i = 0; i < lista.length; i++) {
+      if(!document.getElementById("prog-overlay")) break;
+      const p = lista[i];
+      const num = String(i + 1).padStart(2, "0");
+      const nombre = slugify(p.nombre);
+      updateProgress(`PDF ${i+1}/${total} — ${p.nombre}`, i + 1, total);
+      const htmlContent = tarjetaPortraitHTML(p, dia);
+      const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+      const ab = await blob.arrayBuffer();
+      zip.file(`${num}_${nombre}.html`, ab);
+      await new Promise(r => setTimeout(r, 20));
+    }
+    updateProgress("Comprimiendo ZIP PDF…", total, total);
+    const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
+    const url = URL.createObjectURL(content);
+    const a = document.createElement("a");
+    a.href = url; a.download = `Brilla_${dia}_PDF.zip`; a.click();
+    URL.revokeObjectURL(url);
+    hideProgress();
+    return;
+  }
+
+  // PNG or JPG ZIP
+  const isJPG = format === 'jpg';
+  const mimeType = isJPG ? "image/jpeg" : "image/png";
+  const ext = isJPG ? "jpg" : "png";
   const zip = new JSZip();
-  const carpetaPNG = zip.folder("PNG");
-  const carpetaJPG = zip.folder("JPG");
+  const carpeta = zip.folder(ext.toUpperCase());
+  showProgress(`Generando ZIP ${ext.toUpperCase()}…`, 0, total);
 
   for(let i = 0; i < lista.length; i++) {
     if(!document.getElementById("prog-overlay")) break;
     const p = lista[i];
     const num = String(i + 1).padStart(2, "0");
     const nombre = slugify(p.nombre);
-
-    updateProgress(`PNG ${i+1}/${total} — ${p.nombre}`, i, total * 2);
-
-    // Generar canvas fresco para PNG
-    const cvsPNG = await buildCanvas916(p, dia);
-    const blobPNG = await new Promise(res => cvsPNG.toBlob(res, "image/png"));
-    carpetaPNG.file(`${num}_${nombre}.png`, await blobPNG.arrayBuffer());
-    // liberar referencia
-    cvsPNG.width = 0; cvsPNG.height = 0;
-
-    updateProgress(`JPG ${i+1}/${total} — ${p.nombre}`, total + i, total * 2);
-
-    // Canvas fresco para JPG
-    const cvsJPG = await buildCanvas916(p, dia);
-    const blobJPG = await new Promise(res => cvsJPG.toBlob(res, "image/jpeg", 0.93));
-    carpetaJPG.file(`${num}_${nombre}.jpg`, await blobJPG.arrayBuffer());
-    cvsJPG.width = 0; cvsJPG.height = 0;
-
-    // Pequeña pausa para liberar memoria entre iteraciones
+    updateProgress(`${ext.toUpperCase()} ${i+1}/${total} — ${p.nombre}`, i + 1, total);
+    const cvs = await buildCanvas916(p, dia);
+    const blob = await new Promise(res => cvs.toBlob(res, mimeType, isJPG ? 0.93 : undefined));
+    carpeta.file(`${num}_${nombre}.${ext}`, await blob.arrayBuffer());
+    cvs.width = 0; cvs.height = 0;
     await new Promise(r => setTimeout(r, 30));
   }
 
   if(!document.getElementById("prog-overlay")) return;
-  updateProgress("Comprimiendo ZIP…", total * 2, total * 2);
+  updateProgress(`Comprimiendo ZIP ${ext.toUpperCase()}…`, total, total);
   const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE", compressionOptions: { level: 6 } });
   const url = URL.createObjectURL(content);
   const a = document.createElement("a");
-  a.href = url; a.download = `Brilla_${dia}.zip`; a.click();
+  a.href = url; a.download = `Brilla_${dia}_${ext.toUpperCase()}.zip`; a.click();
   URL.revokeObjectURL(url);
   hideProgress();
 }
